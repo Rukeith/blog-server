@@ -1,0 +1,42 @@
+{
+  "name": "blog-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=deployment node index.js",
+    "dev": "NODE_ENV=deployment nodemon index.js",
+    "test": "NODE_ENV=deployment jest",
+    "lint": "./node_modules/.bin/eslint --quiet ./*",
+    "apidoc": "./node_modules/.bin/apidoc -i ./routes -o ./public/apidoc -c ./config/apidoc.json"
+  },
+  "engines": {
+    "node": ">=9.1.0"
+  },
+  "repository": "https://github.com/Rukeith/blog-server.git",
+  "author": "Rukeith <fenglan.crazydance@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "kcors": "^2.2.1",
+    "koa": "^2.4.1",
+    "koa-body": "^2.5.0",
+    "koa-helmet": "^3.3.0",
+    "koa-logger": "^3.1.0",
+    "koa-parameter": "^3.0.1",
+    "koa-pug": "^3.0.0-2",
+    "koa-router": "^7.3.0",
+    "koa-sslify": "^2.1.2",
+    "koa-static": "^4.0.1",
+    "koa-views": "^6.1.2",
+    "lodash": "^4.17.4",
+    "moment": "^2.19.2",
+    "mongoose": "^4.13.2",
+    "raven": "^2.2.1",
+    "validator": "^9.1.1"
+  },
+  "devDependencies": {
+    "apidoc": "^0.17.6",
+    "babel-eslint": "^8.0.2",
+    "eslint": "^4.11.0",
+    "nodemon": "^1.12.1"
+  }
+}
