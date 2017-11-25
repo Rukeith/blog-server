@@ -1,4 +1,3 @@
-'use strict';
 const Koa = require('koa');
 const _ = require('lodash');
 const path = require('path');
@@ -14,19 +13,21 @@ const router = require('koa-router')();
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
 const config = require('./config.js');
+
 const app = new Koa();
 
 Raven.config(config.sentryKey, {
-  release: '1.0.0',
-  environment: process.env.NODE_ENV,
   sampleRate: 1,
   sendTimeout: 15,
+  release: '1.0.0',
   autoBreadcrumbs: true,
-  captureUnhandledRejections: true
+  captureUnhandledRejections: true,
+  environment: process.env.NODE_ENV,
 }).install();
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(enforceHttps({ trustProtoHeader: true, trustAzureHeader: true }));  // Automatically redirects to an HTTPS address
+  // Automatically redirects to an HTTPS address
+  app.use(enforceHttps({ trustProtoHeader: true, trustAzureHeader: true }));
 }
 
 app
@@ -36,8 +37,8 @@ app
   .use(cors({
     origin: '*',
     maxAge: 24 * 60 * 60,
-    methods: [ 'GET', 'PUT', 'DELETE', 'POST', 'PATCH', 'OPTIONS' ],
-    allowedHeaders: [ 'Content-Type', 'Rukeith-Token' ]
+    allowedHeaders: ['Content-Type', 'Rukeith-Token'],
+    methods: ['GET', 'PUT', 'DELETE', 'POST', 'PATCH', 'OPTIONS'],
   }))
   .use(logger())
   .use(koaBody())
@@ -49,14 +50,16 @@ app
 
 const pug = new Pug({
   viewPath: './views',
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 });
 pug.use(app);
 
 require('./model/init.js');
 const index = require('./route/index.js');
+const tag = require('./route/tag.js');
 // const auth = require('./route/auth.js');
 index(router);
+tag(router);
 // auth(router);
 
 app.on('error', (err, ctx) => {
@@ -82,7 +85,7 @@ app.on('error', (err, ctx) => {
       extra: error,
       status: ctx.response.status,
       level: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'level')) ? ctx.sentryError.level : 'error',
-      message: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'message')) ? ctx.sentryError.message : 'unexpected error'
+      message: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'message')) ? ctx.sentryError.message : 'unexpected error',
     };
   } catch (error) {
     console.error('Error handle fail :', error);
@@ -96,12 +99,8 @@ app.listen(PORT, () => {
   console.info('===========================================');
 
   // 註冊全域未捕獲異常的處理器
-  process.on('uncaughtException', (err) => {
-    console.error('Caught exception: ', err.stack);
-  });
-  process.on('unhandledRejection', (reason, p) => {
-    console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack);
-  });
+  process.on('uncaughtException', err => console.error('Caught exception: ', err.stack));
+  process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
 });
 
 module.exports = app;

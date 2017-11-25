@@ -16,6 +16,7 @@
   "author": "Rukeith <fenglan.crazydance@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "http-status": "^1.0.1",
     "kcors": "^2.2.1",
     "koa": "^2.4.1",
     "koa-body": "^2.5.0",
