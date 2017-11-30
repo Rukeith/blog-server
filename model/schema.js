@@ -1,42 +1,43 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
 const ArticleSchema = new Schema({
   title: {
     type: Schema.Types.String,
     required: true,
-    index: true
+    index: true,
   },
   content: {
     type: Schema.Types.String,
-    required: true
+    required: true,
   },
   url: {
     type: Schema.Types.String,
     required: true,
-    index: true
+    index: true,
   },
   tags: {
-    type: [ { type: Schema.Types.ObjectId, ref: 'Tag' } ],
+    type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
     required: true,
-    index: true
+    index: true,
   },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
-  deletedAt: Schema.Types.Date
+  deletedAt: Schema.Types.Date,
 });
 
 const TagSchema = new Schema({
   name: {
     type: Schema.Types.String,
     required: true,
-    index: true
+    index: true,
   },
-  deletedAt: Schema.Types.Date
+  deletedAt: Schema.Types.Date,
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 module.exports = {
   Tag: mongoose.model('Tag', TagSchema),
-  Article: mongoose.model('Article', ArticleSchema)
+  Article: mongoose.model('Article', ArticleSchema),
 };

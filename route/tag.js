@@ -18,15 +18,18 @@ module.exports = (api) => {
    * @apiHeader {String} Rukeith-Token Acess token
    * @apiHeaderExample {json} Token-Example
    *    {
-   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjMTE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
+   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+   *        eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjM
+   *        TE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.
+   *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
-   * 
+   *
    * @apiParam {String[]} names An array of tags' name
    * @apiParamExample {params} Create-Tags
    *    {
    *      "names": [ "tag1", "tag2" ]
    *    }
-   * 
+   *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
    * @apiSuccessExample {json} Create-Room
@@ -35,7 +38,7 @@ module.exports = (api) => {
    *      "status": 201,
    *      "message": "success"
    *    }
-   * 
+   *
    * @apiError {String} level error level
    * @apiError {String} message error message
    * @apiError {Number} status HTTP Status code
@@ -46,7 +49,7 @@ module.exports = (api) => {
    *      "level": "warning",
    *      "message": "Session token is invalid"
    *    }
-   * 
+   *
    * @apiErrorExample {json} Server-Error
    *    HTTP/1.1 500 Internal Server Error
    *    {
@@ -85,7 +88,10 @@ module.exports = (api) => {
    * @apiHeader {String} Rukeith-Token Acess token
    * @apiHeaderExample {json} Token-Example
    *    {
-   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjMTE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
+   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+   *        eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjM
+   *        TE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.
+   *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
    * @apiParam {String} q An array of tags' name
@@ -93,7 +99,7 @@ module.exports = (api) => {
    *    {
    *      "names": [ "tag1", "tag2" ]
    *    }
-   * 
+   *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
    * @apiSuccessExample {json} Create-Room
@@ -102,7 +108,7 @@ module.exports = (api) => {
    *      "status": 201,
    *      "message": "success"
    *    }
-   * 
+   *
    * @apiError {String} level error level
    * @apiError {String} message error message
    * @apiError {Number} status HTTP Status code
@@ -113,7 +119,7 @@ module.exports = (api) => {
    *      "level": "warning",
    *      "message": "Session token is invalid"
    *    }
-   * 
+   *
    * @apiErrorExample {json} Server-Error
    *    HTTP/1.1 500 Internal Server Error
    *    {
@@ -139,15 +145,17 @@ module.exports = (api) => {
    * @apiHeader {String} Rukeith-Token Acess token
    * @apiHeaderExample {json} Token-Example
    *    {
-   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjMTE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
+   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA4YjcyMjZjLTU1Mj
+   *        QtNDY3YS1iMDk0LTRkN2U1M2VjMTE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1L
+   *        CJpc3MiOiJpc3RhZ2luZyJ9.x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
-   * 
+   *
    * @apiParam {String[]} names An array of tags' name
    * @apiParamExample {params} Create-Tags
    *    {
    *      "names": [ "tag1", "tag2" ]
    *    }
-   * 
+   *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
    * @apiSuccessExample {json} Create-Room
@@ -156,7 +164,7 @@ module.exports = (api) => {
    *      "status": 201,
    *      "message": "success"
    *    }
-   * 
+   *
    * @apiError {String} level error level
    * @apiError {String} message error message
    * @apiError {Number} status HTTP Status code
@@ -167,7 +175,7 @@ module.exports = (api) => {
    *      "level": "warning",
    *      "message": "Session token is invalid"
    *    }
-   * 
+   *
    * @apiErrorExample {json} Server-Error
    *    HTTP/1.1 500 Internal Server Error
    *    {
@@ -190,7 +198,6 @@ module.exports = (api) => {
         ctx.response.body = 'The tag is not exists';
         return;
       }
-      
     } catch (error) {
       ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
       ctx.response.body = JSON.stringify(error);
