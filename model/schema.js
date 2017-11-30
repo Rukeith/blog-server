@@ -3,23 +3,32 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const ArticleSchema = new Schema({
   title: {
-    type: Schema.Types.String,
-    required: true,
     index: true,
+    required: true,
+    type: Schema.Types.String,
+  },
+  begins: {
+    required: true,
+    type: Schema.Types.String,
   },
   content: {
-    type: Schema.Types.String,
     required: true,
+    type: Schema.Types.String,
   },
   url: {
-    type: Schema.Types.String,
-    required: true,
     index: true,
+    required: true,
+    type: Schema.Types.String,
   },
   tags: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-    required: true,
     index: true,
+    required: true,
+    type: [
+      {
+        ref: 'Tag',
+        type: Schema.Types.ObjectId,
+      },
+    ],
   },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
@@ -28,9 +37,9 @@ const ArticleSchema = new Schema({
 
 const TagSchema = new Schema({
   name: {
-    type: Schema.Types.String,
-    required: true,
     index: true,
+    required: true,
+    type: Schema.Types.String,
   },
   deletedAt: Schema.Types.Date,
 }, {
