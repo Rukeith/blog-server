@@ -20,23 +20,8 @@ const ArticleSchema = new Schema({
     required: true,
     index: true
   },
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true,
-    index: true
-  },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
-  deletedAt: Schema.Types.Date
-});
-
-const CategorySchema = new Schema({
-  name: {
-    type: Schema.Types.String,
-    required: true,
-    index: true
-  },
   deletedAt: Schema.Types.Date
 });
 
@@ -53,6 +38,5 @@ const TagSchema = new Schema({
 
 module.exports = {
   Tag: mongoose.model('Tag', TagSchema),
-  Article: mongoose.model('Article', ArticleSchema),
-  Category: mongoose.model('Category', CategorySchema)
+  Article: mongoose.model('Article', ArticleSchema)
 };

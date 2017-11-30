@@ -1,6 +1,6 @@
 {
   "name": "blog-server",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=deployment node index.js",
@@ -26,18 +26,18 @@
     "koa-pug": "^3.0.0-2",
     "koa-router": "^7.3.0",
     "koa-sslify": "^2.1.2",
-    "koa-static": "^4.0.1",
+    "koa-static": "^4.0.2",
     "koa-views": "^6.1.2",
     "lodash": "^4.17.4",
-    "moment": "^2.19.2",
-    "mongoose": "^4.13.2",
+    "moment": "^2.19.3",
+    "mongoose": "^4.13.5",
     "raven": "^2.2.1",
-    "validator": "^9.1.1"
+    "validator": "^9.1.2"
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.0.2",
-    "eslint": "^4.11.0",
+    "eslint": "^4.12.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "nodemon": "^1.12.1"
