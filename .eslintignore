@@ -1,0 +1,9 @@
+node_modules/*
+public/*
+views/*
+yarn.lock
+package.json
+package-lock.json
+README.md
+Procfile
+LICENSE

@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const TagModel = require('../model/tag.js');
-const ArticleModel = require('../model/article.js');
+// const ArticleModel = require('../model/article.js');
 
 const tagModel = new TagModel();
-const articleModel = new ArticleModel();
+// const articleModel = new ArticleModel();
 
 module.exports = (api) => {
   /**
@@ -60,28 +60,19 @@ module.exports = (api) => {
    */
   api.post('/tags', async (ctx) => {
     let { names } = ctx.request.body;
-    names = _.map(names, _.trim);
+    names = [...new Set(_.map(names, _.trim))];
 
     try {
-      const tags = await Promise.all(_.map(names, (name) => {
-        if (!_.isEmpty(name)) {
-          return new Promise(async (resolve, reject) => {
-            try {
-              const tag = await tagModel.create(name);
-              resolve(tag.toJSON());
-            } catch (error) {
-              reject(error);
-            }
-          });
-        }
-        return Promise.resolve();
-      }));
-
+      const tags = await Promise.all(_.map(names, name => ((_.isEmpty(name)) ?
+        Promise.resolve() : tagModel.create(name))));
       ctx.status = HTTPStatus.CREATED;
-      ctx.response.body = tags;
+      ctx.response.body = _.map(tags, tag => ({
+        id: tag._id,
+        name: tag.name,
+      }));
     } catch (error) {
       ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = JSON.stringify(error);
+      ctx.response.body = _.toString(error);
     }
   });
 
@@ -136,17 +127,30 @@ module.exports = (api) => {
   api.get('/tags', async (ctx) => {
     const { offset = 0, limit = 100 } = ctx.query;
 
-    const query = tagModel.find();
-    if (!_.isEmpty(offset)) query.skip(offset);
-    if (!_.isEmpty(limit)) query.limit(limit);
-    
-    const tags = await tagModel.find();
-    ctx.status = HTTPStatus.OK;
-    ctx.response.body = tags;
+    const options = {};
+    if (!_.isNil(offset)) options.skip = _.toInteger(offset);
+    if (!_.isNil(limit)) options.limit = _.toInteger(limit);
+
+    try {
+      const tags = await tagModel.find({}, 'all', options);
+      ctx.status = HTTPStatus.OK;
+      ctx.response.body = _.map(tags, tag => ({
+        id: tag._id,
+        name: tag.name,
+        articels: {
+          content: tag.articles,
+          amount: tag.articles.length,
+        },
+      }));
+    } catch (error) {
+      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+      ctx.response.body = _.toString(error);
+    }
   });
 
   /**
-   * @api {get} /tags/:tagId Get articles which are reference to the tag which id is param
+   * @api {get} /tags/:tagId?offset=0&limit=10 Get articles which are
+   *  reference to the tag which id is param
    * @apiVersion 0.1.0
    * @apiName Get_Articles_Of_Tag
    * @apiGroup Tag
@@ -163,6 +167,8 @@ module.exports = (api) => {
    *    }
    *
    * @apiParam {String} tagId the tag's id
+   * @apiParam {Number} [offset=0] the article's offset
+   * @apiParam {Number} [limit=10] the article's limt
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -193,22 +199,30 @@ module.exports = (api) => {
    *    }
    */
   api.get('/tags/:tagId', async (ctx) => {
-    const tagId = _.trim(ctx.params.tagId);
-    if (_.isEmpty(tagId)) {
-      ctx.status = HTTPStatus.BAD_REQUEST;
-      ctx.response.body = 'Create tag parameter invaild';
-    }
+    const { tagId } = ctx.params;
+    const { offset = 0, limit = 100 } = ctx.query;
 
     try {
-      const tag = await tagModel.find({}, 'one');
+      const options = { sort: { createdAt: 'desc' } };
+      if (!_.isNil(offset)) options.skip = offset;
+      if (!_.isNil(limit)) options.limit = limit;
+
+      const tag = await tagModel.find({ _id: { $eq: tagId } }, 'one', {
+        path: 'articles',
+        select: ['title', 'begins', 'url', 'coverImages', 'createdAt'],
+        populate: { path: 'articles' },
+        options,
+      });
       if (_.isEmpty(tag)) {
         ctx.status = HTTPStatus.BAD_REQUEST;
         ctx.response.body = 'The tag is not exists';
         return;
       }
+      ctx.status = HTTPStatus.OK;
+      ctx.response.body = tag;
     } catch (error) {
       ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = JSON.stringify(error);
+      ctx.response.body = _.toString(error);
     }
   });
 
@@ -260,7 +274,30 @@ module.exports = (api) => {
    *      "message": "Update tag's name processing failed"
    *    }
    */
-  api.patch('/tags/:tagId');
+  api.patch('/tags/:tagId', async (ctx) => {
+    const { tagId } = ctx.params;
+    let { name } = ctx.request.body;
+    name = _.trim(name);
+    if (_.isEmpty(name)) {
+      ctx.status = HTTPStatus.BAD_REQUEST;
+      ctx.response.body = 'The tag\'s name is invalid';
+      return;
+    }
+
+    try {
+      const tag = await tagModel.find(tagId, 'idu', { name });
+      if (_.isEmpty(tag)) {
+        ctx.status = HTTPStatus.BAD_REQUEST;
+        ctx.response.body = 'The tag is not exists';
+        return;
+      }
+      ctx.status = HTTPStatus.OK;
+      ctx.response.body = tag;
+    } catch (error) {
+      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+      ctx.response.body = _.toString(error);
+    }
+  });
 
   /**
    * @api {delete} /tags/:tagId Delete tag by tagId
@@ -309,5 +346,21 @@ module.exports = (api) => {
    *      "message": "Delete tag processing failed"
    *    }
    */
-  api.delete('/tags/:tagId');
+  api.delete('/tags/:tagId', async (ctx) => {
+    const { tagId } = ctx.params;
+
+    try {
+      const tag = await tagModel.find(tagId, 'idu', { deletedAt: new Date() });
+      if (_.isEmpty(tag)) {
+        ctx.status = HTTPStatus.BAD_REQUEST;
+        ctx.response.body = 'The tag is not exists';
+        return;
+      }
+      ctx.status = HTTPStatus.OK;
+      ctx.response.body = tag;
+    } catch (error) {
+      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+      ctx.response.body = _.toString(error);
+    }
+  });
 };

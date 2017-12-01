@@ -18,7 +18,7 @@ module.exports = class TagModel {
     }).exists('deletedAt', false);
   }
 
-  find(queries = {}, type = 'all') {
+  find(queries = {}, type = 'all', options = {}) {
     if (_.isNil(queries)) {
       return Promise.reject(new Error([this.collection, 'model', 1001]));
     }
@@ -28,9 +28,12 @@ module.exports = class TagModel {
       case 'one':
         promise = Tag.findOne(queries).exists('deletedAt', false);
         break;
+      case 'idu':
+        promise = Tag.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
+        break;
       default:
       case 'all':
-        promise = Tag.find(queries).exists('deletedAt', false);
+        promise = Tag.find(queries, null, options).exists('deletedAt', false);
         break;
     }
 

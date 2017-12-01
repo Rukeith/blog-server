@@ -20,16 +20,6 @@ const ArticleSchema = new Schema({
     required: true,
     type: Schema.Types.String,
   },
-  tags: {
-    index: true,
-    required: true,
-    type: [
-      {
-        ref: 'Tag',
-        type: Schema.Types.ObjectId,
-      },
-    ],
-  },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
   deletedAt: Schema.Types.Date,
@@ -40,6 +30,15 @@ const TagSchema = new Schema({
     index: true,
     required: true,
     type: Schema.Types.String,
+  },
+  articles: {
+    index: true,
+    type: [
+      {
+        ref: 'Article',
+        type: Schema.Types.ObjectId,
+      },
+    ],
   },
   deletedAt: Schema.Types.Date,
 }, {
