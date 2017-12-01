@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=deployment nodemon index.js",
     "test": "NODE_ENV=deployment jest",
     "lint": "./node_modules/.bin/eslint --quiet ./*",
-    "apidoc": "./node_modules/.bin/apidoc -i ./routes -o ./public/apidoc -c ./config/apidoc.json"
+    "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
   "engines": {
     "node": ">=9.2.0"
