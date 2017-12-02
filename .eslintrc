@@ -21,7 +21,8 @@
     "amd": true
   },
   "rules": {
-    "semi": [ 2, "always" ]
+    "semi": [ 2, "always" ],
+    "no-underscore-dangle": "off"
   },
   "extends": "airbnb-base"
 }

@@ -23,6 +23,8 @@ const ArticleSchema = new Schema({
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
   deletedAt: Schema.Types.Date,
+}, {
+  timestamps: true,
 });
 
 const TagSchema = new Schema({

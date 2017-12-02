@@ -8,7 +8,7 @@ module.exports = class TagModel {
 
   create(name) {
     if (_.isEmpty(name)) {
-      return Promise.reject(new Error([this.collection, 'model', 1000]));
+      throw new Error([this.collection, 'model', 1000]);
     }
 
     return Tag.findOneAndUpdate({ name }, { updatedAt: new Date() }, {
@@ -20,7 +20,7 @@ module.exports = class TagModel {
 
   find(queries = {}, type = 'all', options = {}) {
     if (_.isNil(queries)) {
-      return Promise.reject(new Error([this.collection, 'model', 1001]));
+      throw new Error([this.collection, 'model', 1001]);
     }
 
     let promise;
@@ -31,9 +31,12 @@ module.exports = class TagModel {
       case 'idu':
         promise = Tag.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
         break;
-      default:
       case 'all':
         promise = Tag.find(queries, null, options).exists('deletedAt', false);
+        break;
+      default:
+      case 'id':
+        promise = Tag.findById(queries, null, options).exists('deletedAt', false);
         break;
     }
 

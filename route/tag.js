@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const TagModel = require('../model/tag.js');
-// const ArticleModel = require('../model/article.js');
+const { validateParameters } = require('../middleware/data.js');
+const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const tagModel = new TagModel();
-// const articleModel = new ArticleModel();
 
 module.exports = (api) => {
   /**
@@ -58,21 +58,18 @@ module.exports = (api) => {
    *      "message": "Create tags processing failed"
    *    }
    */
-  api.post('/tags', async (ctx) => {
+  api.post('/tags', validateParameters('post/tags'), async (ctx) => {
     let { names } = ctx.request.body;
     names = [...new Set(_.map(names, _.trim))];
 
     try {
       const tags = await Promise.all(_.map(names, name => ((_.isEmpty(name)) ?
         Promise.resolve() : tagModel.create(name))));
-      ctx.status = HTTPStatus.CREATED;
-      ctx.response.body = _.map(tags, tag => ({
-        id: tag._id,
-        name: tag.name,
-      }));
+
+      const formatTags = _.map(tags, tag => ({ id: tag.id, name: tag.name }));
+      successResponse(ctx, [HTTPStatus.CREATED, 'tag', 'api', 1000, formatTags]);
     } catch (error) {
-      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = _.toString(error);
+      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1000, error]);
     }
   });
 
@@ -95,6 +92,8 @@ module.exports = (api) => {
    *
    * @apiParam {Number} [limit=100] the limit of query amount
    * @apiParam {Number} [offset=0] start query tags at which number
+   * @apiParam {String} [direct='desc'] sort is desc or asc
+   * @apiParam {String} [sortby='createdAt'] sort data by which field
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -124,27 +123,34 @@ module.exports = (api) => {
    *      "message": "Get tags processing failed"
    *    }
    */
-  api.get('/tags', async (ctx) => {
-    const { offset = 0, limit = 100 } = ctx.query;
-
-    const options = {};
-    if (!_.isNil(offset)) options.skip = _.toInteger(offset);
-    if (!_.isNil(limit)) options.limit = _.toInteger(limit);
+  api.get('/tags', validateParameters('get/tags'), async (ctx) => {
+    const {
+      offset = 0,
+      limit = 100,
+      direct = 'desc',
+      sortby = 'createdAt',
+    } = ctx.query;
+    const options = {
+      limit,
+      sort: {},
+      skip: offset,
+    };
+    if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
+    if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
 
     try {
       const tags = await tagModel.find({}, 'all', options);
-      ctx.status = HTTPStatus.OK;
-      ctx.response.body = _.map(tags, tag => ({
-        id: tag._id,
+      const formatTags = _.map(tags, tag => ({
+        id: tag.id,
         name: tag.name,
-        articels: {
+        articles: {
           content: tag.articles,
           amount: tag.articles.length,
         },
       }));
+      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1001, formatTags]);
     } catch (error) {
-      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = _.toString(error);
+      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1001, error]);
     }
   });
 
@@ -168,7 +174,9 @@ module.exports = (api) => {
    *
    * @apiParam {String} tagId the tag's id
    * @apiParam {Number} [offset=0] the article's offset
-   * @apiParam {Number} [limit=10] the article's limt
+   * @apiParam {Number} [limit=10] the article's limit
+   * @apiParam {String} [direct='desc'] sort is desc or asc
+   * @apiParam {String} [sortby='createdAt'] sort data by which field
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -198,31 +206,47 @@ module.exports = (api) => {
    *      "message": "Get articles processing failed"
    *    }
    */
-  api.get('/tags/:tagId', async (ctx) => {
+  api.get('/tags/:tagId', validateParameters('get/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
-    const { offset = 0, limit = 100 } = ctx.query;
+    const {
+      offset = 0,
+      limit = 100,
+      direct = 'desc',
+      sortby = 'createdAt',
+    } = ctx.query;
+
+    const options = {
+      limit,
+      sort: {},
+      skip: offset,
+    };
+    if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
+    if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
 
     try {
-      const options = { sort: { createdAt: 'desc' } };
-      if (!_.isNil(offset)) options.skip = offset;
-      if (!_.isNil(limit)) options.limit = limit;
+      // const options = { sort: { createdAt: 'desc' } };
+      // if (!_.isNil(offset)) options.skip = offset;
+      // if (!_.isNil(limit)) options.limit = limit;
 
       const tag = await tagModel.find({ _id: { $eq: tagId } }, 'one', {
         path: 'articles',
-        select: ['title', 'begins', 'url', 'coverImages', 'createdAt'],
+        // select: {
+        //   url: 1,
+        //   title: 1,
+        //   begins: 1,
+        //   createdAt: 1,
+        //   coverImages: 1,
+        // },
         populate: { path: 'articles' },
-        options,
+        // options,
       });
       if (_.isEmpty(tag)) {
-        ctx.status = HTTPStatus.BAD_REQUEST;
-        ctx.response.body = 'The tag is not exists';
+        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
         return;
       }
-      ctx.status = HTTPStatus.OK;
-      ctx.response.body = tag;
+      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1002, tag]);
     } catch (error) {
-      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = _.toString(error);
+      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1003, error]);
     }
   });
 
@@ -274,28 +298,24 @@ module.exports = (api) => {
    *      "message": "Update tag's name processing failed"
    *    }
    */
-  api.patch('/tags/:tagId', async (ctx) => {
+  api.patch('/tags/:tagId', validateParameters('patch/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
     let { name } = ctx.request.body;
     name = _.trim(name);
     if (_.isEmpty(name)) {
-      ctx.status = HTTPStatus.BAD_REQUEST;
-      ctx.response.body = 'The tag\'s name is invalid';
+      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1004]);
       return;
     }
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { name });
       if (_.isEmpty(tag)) {
-        ctx.status = HTTPStatus.BAD_REQUEST;
-        ctx.response.body = 'The tag is not exists';
+        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
         return;
       }
-      ctx.status = HTTPStatus.OK;
-      ctx.response.body = tag;
+      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1003, tag]);
     } catch (error) {
-      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = _.toString(error);
+      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1005, error]);
     }
   });
 
@@ -346,21 +366,18 @@ module.exports = (api) => {
    *      "message": "Delete tag processing failed"
    *    }
    */
-  api.delete('/tags/:tagId', async (ctx) => {
+  api.delete('/tags/:tagId', validateParameters('delete/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { deletedAt: new Date() });
       if (_.isEmpty(tag)) {
-        ctx.status = HTTPStatus.BAD_REQUEST;
-        ctx.response.body = 'The tag is not exists';
+        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
         return;
       }
-      ctx.status = HTTPStatus.OK;
-      ctx.response.body = tag;
+      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1004, tag]);
     } catch (error) {
-      ctx.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-      ctx.response.body = _.toString(error);
+      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1006, error]);
     }
   });
 };

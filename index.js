@@ -4,9 +4,11 @@ const path = require('path');
 const cors = require('kcors');
 const Pug = require('koa-pug');
 const Raven = require('raven');
+const i18n = require('koa-i18n');
 const views = require('koa-views');
 const koaBody = require('koa-body');
 const serve = require('koa-static');
+const locale = require('koa-locale');
 const helmet = require('koa-helmet');
 const logger = require('koa-logger');
 const router = require('koa-router')();
@@ -24,6 +26,8 @@ Raven.config(config.sentryKey, {
   captureUnhandledRejections: true,
   environment: process.env.NODE_ENV,
 }).install();
+
+locale(app);
 
 if (process.env.NODE_ENV === 'production') {
   // Automatically redirects to an HTTPS address
@@ -46,7 +50,16 @@ app
   .use(serve(path.join(__dirname, 'public')))
   .use(router.routes())
   .use(router.allowedMethods({ throw: true }))
-  .use(parameter(app));
+  .use(parameter(app))
+  .use(i18n(app, {
+    locales: ['us'],
+    extension: '.json',
+    modes: [
+      'query', //  optional detect querystring - `/?locale=en-US`
+      'header', //  optional detect header      - `Accept-Language: zh-CN,zh;q=0.5`
+      'url', //  optional detect url         - `/en`
+    ],
+  }));
 
 const pug = new Pug({
   viewPath: './views',
@@ -57,10 +70,11 @@ pug.use(app);
 require('./model/init.js');
 const index = require('./route/index.js');
 const tag = require('./route/tag.js');
-// const auth = require('./route/auth.js');
+const article = require('./route/article.js');
+
 index(router);
 tag(router);
-// auth(router);
+article(router);
 
 app.on('error', (err, ctx) => {
   try {

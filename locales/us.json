@@ -1,0 +1,22 @@
+{
+	"error-tagModel-1000": "Tag's name which is used to create tag is invalid",
+	"error-tagModel-1001": "The parameters are used to query tags are invalid",
+	"error-dataMiddleware-1000": "The api route is not exist",
+	"error-dataMiddleware-1001": "The api's parameters are invalid",
+	"error-articleApi-1000": "Article's url cannot duplicate",
+	"error-articleApi-1001": "Create article processing failed",
+	"error-tagApi-1000": "Create tags processing failed",
+	"error-tagApi-1001": "Query tags processing failed",
+	"error-tagApi-1002": "The tag is not existed",
+	"error-tagApi-1003": "Get tag's info processing failed",
+	"error-tagApi-1004": "The parameter is used to update tag's name is invalid",
+	"error-tagApi-1005": "Update tag's name processing failed",
+	"error-tagApi-1006": "Delete tag processing failed",
+	"success-tagApi-1000": "Create tag successes",
+	"success-tagApi-1001": "Query tags successes",
+	"success-tagApi-1002": "Get tag's info successes",
+	"success-tagApi-1003": "Update tag's name successes",
+	"success-tagApi-1004": "Delete tag successes",
+	"success-articleApi-1000": "Create article success",
+	"success-articleApi-1001": "success-articleApi-1001"
+}
