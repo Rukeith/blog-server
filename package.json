@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=deployment node index.js",
-    "heroku-prebuild": "npm run apidoc",
+    "heroku-postbuild": "npm run apidoc",
     "dev": "NODE_ENV=deployment nodemon index.js",
     "test": "NODE_ENV=deployment jest",
     "lint": "./node_modules/.bin/eslint --quiet ./*",
