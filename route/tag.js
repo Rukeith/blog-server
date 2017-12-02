@@ -6,6 +6,11 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const tagModel = new TagModel();
 
+const tagSuccessResponse = (ctx, status = HTTPStatus.OK, code, data) =>
+  successResponse(ctx, [status, 'tag', 'api', code, data]);
+const tagErrorResponse = (ctx, status = HTTPStatus.INTERNAL_SERVER_ERROR, code, error) =>
+  errorResponse(ctx, [status, 'tag', 'api', code, error]);
+
 module.exports = (api) => {
   /**
    * @api {post} /tags Create tags
@@ -67,9 +72,9 @@ module.exports = (api) => {
         Promise.resolve() : tagModel.create(name))));
 
       const formatTags = _.map(tags, tag => ({ id: tag.id, name: tag.name }));
-      successResponse(ctx, [HTTPStatus.CREATED, 'tag', 'api', 1000, formatTags]);
+      tagSuccessResponse(ctx, HTTPStatus.CREATED, 1000, formatTags);
     } catch (error) {
-      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1000, error]);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1000, error);
     }
   });
 
@@ -137,20 +142,37 @@ module.exports = (api) => {
     };
     if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
     if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
+    const populate = {
+      path: 'articles',
+      options: { sort: { createdAt: 'desc' } },
+      select: {
+        url: 1,
+        title: 1,
+        begins: 1,
+        createdAt: 1,
+        coverImages: 1,
+      },
+    };
 
     try {
-      const tags = await tagModel.find({}, 'all', options);
+      const tags = await tagModel.find({}, 'all', options, populate);
       const formatTags = _.map(tags, tag => ({
         id: tag.id,
         name: tag.name,
         articles: {
-          content: tag.articles,
           amount: tag.articles.length,
+          content: _.map(tag.articles, article => ({
+            id: article.id,
+            url: article.url,
+            title: article.title,
+            begins: article.begins,
+            coverImages: article.coverImages,
+          })),
         },
       }));
-      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1001, formatTags]);
+      tagSuccessResponse(ctx, HTTPStatus.OK, 1001, formatTags);
     } catch (error) {
-      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1001, error]);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
     }
   });
 
@@ -214,7 +236,6 @@ module.exports = (api) => {
       direct = 'desc',
       sortby = 'createdAt',
     } = ctx.query;
-
     const options = {
       limit,
       sort: {},
@@ -222,31 +243,43 @@ module.exports = (api) => {
     };
     if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
     if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
+    const populate = {
+      path: 'articles',
+      options: { sort: { createdAt: 'desc' } },
+      select: {
+        url: 1,
+        title: 1,
+        begins: 1,
+        createdAt: 1,
+        coverImages: 1,
+      },
+    };
 
     try {
-      // const options = { sort: { createdAt: 'desc' } };
-      // if (!_.isNil(offset)) options.skip = offset;
-      // if (!_.isNil(limit)) options.limit = limit;
-
-      const tag = await tagModel.find({ _id: { $eq: tagId } }, 'one', {
-        path: 'articles',
-        // select: {
-        //   url: 1,
-        //   title: 1,
-        //   begins: 1,
-        //   createdAt: 1,
-        //   coverImages: 1,
-        // },
-        populate: { path: 'articles' },
-        // options,
-      });
+      const tag = await tagModel.find(tagId, 'id', {}, populate);
       if (_.isEmpty(tag)) {
-        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
+        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
         return;
       }
-      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1002, tag]);
+
+      const formatTag = {
+        id: tag.id,
+        name: tag.name,
+        createdAt: tag.createdAt,
+        updatedAt: tag.updatedAt,
+        articles: _.map(tag.articles, article => ({
+          id: article.id,
+          url: article.url,
+          title: article.title,
+          begins: article.begins,
+          createdAt: tag.createdAt,
+          updatedAt: tag.updatedAt,
+          coverImages: article.coverImages,
+        })),
+      };
+      tagSuccessResponse(ctx, HTTPStatus.OK, 1002, formatTag);
     } catch (error) {
-      errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'tag', 'api', 1003, error]);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1003, error);
     }
   });
 
@@ -303,19 +336,19 @@ module.exports = (api) => {
     let { name } = ctx.request.body;
     name = _.trim(name);
     if (_.isEmpty(name)) {
-      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1004]);
+      tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1004);
       return;
     }
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { name });
       if (_.isEmpty(tag)) {
-        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
+        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
         return;
       }
-      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1003, tag]);
+      tagSuccessResponse(ctx, HTTPStatus.OK, 1003);
     } catch (error) {
-      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1005, error]);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1005, error);
     }
   });
 
@@ -372,12 +405,12 @@ module.exports = (api) => {
     try {
       const tag = await tagModel.find(tagId, 'idu', { deletedAt: new Date() });
       if (_.isEmpty(tag)) {
-        errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1002]);
+        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
         return;
       }
-      successResponse(ctx, [HTTPStatus.OK, 'tag', 'api', 1004, tag]);
+      tagSuccessResponse(ctx, HTTPStatus.OK, 1004);
     } catch (error) {
-      errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'tag', 'api', 1006, error]);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1006, error);
     }
   });
 };

@@ -18,5 +18,10 @@
 	"success-tagApi-1003": "Update tag's name successes",
 	"success-tagApi-1004": "Delete tag successes",
 	"success-articleApi-1000": "Create article success",
-	"success-articleApi-1001": "success-articleApi-1001"
+	"success-articleApi-1001": "success-articleApi-1001",
+	"success-articleApi-1002": "success-articleApi-1002",
+	"success-articleApi-1003": "success-articleApi-1003",
+	"success-articleApi-1004": "success-articleApi-1004",
+	"error-articleApi-1007": "error-articleApi-1007",
+	"success-articleApi-1005": "success-articleApi-1005"
 }

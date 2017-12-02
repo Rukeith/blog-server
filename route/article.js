@@ -8,7 +8,7 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 const tagModel = new TagModel();
 const articleModel = new ArticleModel();
 
-const articleSuccessResponse = (ctx, status = HTTPStatus.INTERNAL_SERVER_ERROR, code, data) =>
+const articleSuccessResponse = (ctx, status = HTTPStatus.OK, code, data) =>
   successResponse(ctx, [status, 'article', 'api', code, data]);
 const articleErrorResponse = (ctx, status = HTTPStatus.INTERNAL_SERVER_ERROR, code, error) =>
   errorResponse(ctx, [status, 'article', 'api', code, error]);
@@ -86,7 +86,6 @@ module.exports = (api) => {
     tags = [...new Set(tags)];
     coverImages = [...new Set(coverImages)];
     const params = {
-      url,
       title,
       begins,
       content,
@@ -94,10 +93,15 @@ module.exports = (api) => {
     };
 
     try {
-      const existArticle = await articleModel.find({ url }, 'one');
-      if (existArticle) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+      if (!_.isEmpty(url)) {
+        const existArticle = await articleModel.find({ url }, 'one');
+        if (existArticle) {
+          return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+        }
+      } else {
+        params.url = new Date().getTime();
       }
+
       const article = await articleModel.create(params);
       if (!_.isEmpty(tags)) {
         tags = await Promise.all(_.map(tags, tagId => tagModel.find(tagId, 'id')));
@@ -185,9 +189,17 @@ module.exports = (api) => {
 
     try {
       const articles = await articleModel.find({}, 'all', options);
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1001, articles);
+      const formatArticles = _.map(articles, article => ({
+        id: article.id,
+        url: article.url,
+        title: article.title,
+        begins: article.begins,
+        content: article.content,
+        createdAt: article.createdAt,
+      }));
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1001, formatArticles);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1002, error);
     }
   });
 
@@ -238,7 +250,27 @@ module.exports = (api) => {
    *      "message": "Get single article processing failed"
    *    }
    */
-  api.get('/articles/:articleId', validateParameters('get/articles/:articleId'), async (ctx) => {});
+  api.get('/articles/:articleId', validateParameters('get/articles/:articleId'), async (ctx) => {
+    const { articleId } = ctx.params;
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+      }
+      const formatArticle = {
+        id: article.id,
+        title: article.title,
+        url: article.url,
+        begins: article.begins,
+        content: article.content,
+        createdAt: article.createdAt,
+        updatedAt: article.updatedAt,
+      };
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1002, formatArticle);
+    } catch (error) {
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1004, error);
+    }
+  });
 
   /**
    * @api {put} /articles/:articleId Update article
@@ -259,8 +291,8 @@ module.exports = (api) => {
    *
    * @apiParam {String} [title] article's title
    * @apiParam {String} [content] article's content
-   * @apiParam {String} [url] article's url and this should be unique
    * @apiParam {String[]} [coverImages] an array of photos' url
+   * @apiParam {String} [url] article's url and this should be unique
    * @apiParamExample {params} Create-Tags
    *    {
    *      "title": "JavaScript builds everything",
@@ -297,7 +329,29 @@ module.exports = (api) => {
    *      "message": "Update article processing failed"
    *    }
    */
-  api.put('/articles/:articleId', validateParameters('put/articles/:articleId'), async (ctx) => {});
+  api.put('/articles/:articleId', validateParameters('put/articles/:articleId'), async (ctx) => {
+    const { articleId } = ctx.params;
+    const { url, ...options } = ctx.request.body;
+
+    try {
+      if (!_.isEmpty(url)) {
+        const existArticle = await articleModel.find({ url }, 'one');
+        if (existArticle) {
+          return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1005);
+        }
+        options.url = url;
+      }
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1006);
+      }
+
+      await articleModel.find(articleId, 'idu', options);
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1003);
+    } catch (error) {
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1007, error);
+    }
+  });
 
   /**
    * @api {put} /articles/:articleId/tags Update article's tags
@@ -352,10 +406,56 @@ module.exports = (api) => {
    *      "message": "Update article processing failed"
    *    }
    */
-  api.put('/articles/:articleId/tags', validateParameters('put/articles/:articleId/tags'), async (ctx) => {});
+  api.put('/articles/:articleId/tags', validateParameters('put/articles/:articleId/tags'), async (ctx) => {
+    const { articleId } = ctx.params;
+    const { push = [], pull = [] } = ctx.request.body;
+
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1008);
+      }
+
+      const promises = [];
+      if (!_.isEmpty(push)) {
+        _.forEach(push, (tagId) => {
+          const pushPromise = new Promise(async (resolve, reject) => {
+            try {
+              const tag = await tagModel.find(tagId, 'id');
+              if (_.isEmpty(tag)) return reject(new Error(`Tag is not existed ${tagId}`));
+              await tagModel.find(tagId, 'idu', { $push: { articles: articleId } });
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          });
+          promises.push(pushPromise);
+        });
+      }
+      if (!_.isEmpty(pull)) {
+        _.forEach(pull, (tagId) => {
+          const pullPromise = new Promise(async (resolve, reject) => {
+            try {
+              const tag = await tagModel.find(tagId, 'id');
+              if (_.isEmpty(tag)) return reject(new Error(`Tag is not existed ${tagId}`));
+              await tagModel.find(tagId, 'idu', { $pull: { articles: articleId } });
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          });
+          promises.push(pullPromise);
+        });
+      }
+      await Promise.all(promises);
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1004);
+    } catch (error) {
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1009, error);
+    }
+  });
 
   /**
-   * @api {put} /articles/publish Publish or dispublish articles
+   * @api {put} /articles/:articleId/publish Publish or dispublish articles
    * @apiVersion 0.1.0
    * @apiName PublishArticle
    * @apiGroup Article
@@ -371,11 +471,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParamExample {params} Publish-Articles
-   *    {
-   *      "507f1f77bcf86cd799439011": true, // Publish
-   *      "507f1f77bcf86cd799439011": false // Dispublish
-   *    }
+   * @apiParam {Boolean} publish true is publishe and false is unpublish
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -405,7 +501,29 @@ module.exports = (api) => {
    *      "message": "Publish articles processing failed"
    *    }
    */
-  api.put('/articles/publish', async (ctx) => {});
+  api.put('/articles/:articleId/publish', validateParameters('put/articles/:articleId/publish'), async (ctx) => {
+    const { articleId } = ctx.params;
+    const { publish } = ctx.request.body;
+
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1010);
+      }
+
+      const options = {};
+      const publishedAt = new Date();
+      if (publish) {
+        options.$set = { publishedAt };
+      } else {
+        options.$unset = { publishedAt: 1 };
+      }
+      await articleModel.find(articleId, 'idu', options);
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1005);
+    } catch (error) {
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1011, error);
+    }
+  });
 
   /**
    * @api {delete} /articles/:articleId Delete article
@@ -454,5 +572,18 @@ module.exports = (api) => {
    *      "message": "Delete article processing failed"
    *    }
    */
-  api.delete('/articles/:articleId', validateParameters('delete/articles/:articleId'), async (ctx) => {});
+  api.delete('/articles/:articleId', validateParameters('delete/articles/:articleId'), async (ctx) => {
+    const { articleId } = ctx.params;
+
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1012);
+      }
+      await articleModel.find(articleId, 'idu', { deletedAt: new Date() });
+      articleSuccessResponse(ctx, HTTPStatus.OK, 1006);
+    } catch (error) {
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1013);
+    }
+  });
 };

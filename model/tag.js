@@ -18,7 +18,7 @@ module.exports = class TagModel {
     }).exists('deletedAt', false);
   }
 
-  find(queries = {}, type = 'all', options = {}) {
+  find(queries = {}, type = 'all', options = {}, populate = {}) {
     if (_.isNil(queries)) {
       throw new Error([this.collection, 'model', 1001]);
     }
@@ -39,6 +39,7 @@ module.exports = class TagModel {
         promise = Tag.findById(queries, null, options).exists('deletedAt', false);
         break;
     }
+    if (!_.isEmpty(populate)) promise.populate(populate);
 
     return promise;
   }

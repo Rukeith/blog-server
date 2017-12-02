@@ -48,8 +48,14 @@ module.exports = {
         case 'put/articles/:articleId/tags':
           ctx.verifyParams({
             articleId: { type: 'string' },
-            pop: { type: 'array', itemType: 'striing', required: false },
-            push: { type: 'array', itemType: 'striing', required: false },
+            pop: { type: 'array', itemType: 'string', required: false },
+            push: { type: 'array', itemType: 'string', required: false },
+          });
+          break;
+        case 'put/articles/:articleId/publish':
+          ctx.verifyParams({
+            articleId: { type: 'string' },
+            // publish: { type: 'boolean' },
           });
           break;
         case 'delete/articles/:articleId':
