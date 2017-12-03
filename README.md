@@ -7,12 +7,12 @@ This repository which is a nodejs api server is made for my personal blog.
 * Sentry (Use for catch api error)
 
 ## Environment Varaiable
-* PORT : default is 3000
-* NOED_ENV : `yarn start` is production and `yarn dev` is development
-* MONGODB_URI : default is localhost
-* SENTRY_DSN : this varaiable is not required
+* `PORT` : default is 3000
+* `NOED_ENV` : `yarn start` is production and `yarn dev` is development
+* `MONGODB_URI` : default is localhost
+* `SENTRY_DSN` : not required
 
 ## Setup
 
-  $ yarn
-  $ yarn start
+    $ yarn
+    $ yarn start
