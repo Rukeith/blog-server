@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
-const config = require('../config.js');
 
 mongoose.Promise = global.Promise;
-mongoose.connect(config.mongoUrl, config.mongoConfig).then(
+mongoose.connect(process.env.MONGODB_URI, { useMongoClient: true }).then(
   () => console.info('MongoDB connection successful !'),
   err => console.error('MongoDB connection fail :', err),
 );

@@ -14,11 +14,10 @@ const logger = require('koa-logger');
 const router = require('koa-router')();
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
-const config = require('./config.js');
 
 const app = new Koa();
 
-Raven.config(config.sentryKey, {
+Raven.config(process.env.SENTRY_DSN, {
   sampleRate: 1,
   sendTimeout: 15,
   release: '1.0.0',
@@ -106,7 +105,7 @@ app.on('error', (err, ctx) => {
   }
 });
 
-const PORT = config ? config.port : 3000;
+const PORT = process.env.PORT ? process.env.PORT : 3000;
 app.listen(PORT, () => {
   console.info('===========================================');
   console.info(`===== Server is running at port: ${PORT} =====`);
