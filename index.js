@@ -17,14 +17,16 @@ const enforceHttps = require('koa-sslify');
 
 const app = new Koa();
 
-Raven.config(process.env.SENTRY_DSN, {
-  sampleRate: 1,
-  sendTimeout: 15,
-  release: '1.0.0',
-  autoBreadcrumbs: true,
-  captureUnhandledRejections: true,
-  environment: process.env.NODE_ENV,
-}).install();
+if (process.env.SENTRY_DSN) {
+  Raven.config(process.env.SENTRY_DSN, {
+    sampleRate: 1,
+    sendTimeout: 15,
+    release: '1.0.0',
+    autoBreadcrumbs: true,
+    captureUnhandledRejections: true,
+    environment: process.env.NODE_ENV,
+  }).install();
+}
 
 locale(app);
 
@@ -77,10 +79,12 @@ article(router);
 
 app.on('error', (err, ctx) => {
   try {
-    Raven.captureException(err, ctx.sentryError, (sentryerr, eventId) => {
-      console.info(`Reported sentry error : ${eventId}`);
-      if (!_.isNil(sentryerr)) console.error('Sentry capture exception error =', sentryerr);
-    });
+    if (process.env.SENTRY_DSN) {
+      Raven.captureException(err, ctx.sentryError, (sentryerr, eventId) => {
+        console.info(`Reported sentry error : ${eventId}`);
+        if (!_.isNil(sentryerr)) console.error('Sentry capture exception error =', sentryerr);
+      });
+    }
 
     const statusCode = ctx.status || 500;
     if (statusCode === 500) {
