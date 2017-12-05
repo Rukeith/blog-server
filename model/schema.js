@@ -47,6 +47,16 @@ const TagSchema = new Schema({
   timestamps: true,
 });
 
+// When jest is testing
+if (process.env.NODE_ENV === 'test') {
+  const mongoUrl = (process.env.MONGODB_URI) ? process.env.MONGODB_URI : 'mongodb://127.0.0.1:27017/rukeith-blog';
+  mongoose.Promise = global.Promise;
+  mongoose.connect(mongoUrl, { useMongoClient: true }).then(
+    () => console.info('MongoDB connection successful !'),
+    err => console.error('MongoDB connection fail :', err),
+  );
+}
+
 module.exports = {
   Tag: mongoose.model('Tag', TagSchema),
   Article: mongoose.model('Article', ArticleSchema),

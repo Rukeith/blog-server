@@ -2,7 +2,7 @@ module.exports = {
   bail: true, // Stop test when first test fail
   collectCoverage: true,
   collectCoverageFrom: ['**/*.{js}'],
-  coverageDirectory: '/public/coverage',
+  coverageDirectory: '<rootDir>/public/coverage',
   coveragePathIgnorePatterns: [
     '<rootDir>/views/',
     '<rootDir>/config/',
@@ -19,7 +19,6 @@ module.exports = {
       statements: 100,
     },
   },
-  notify: true,
   clearMocks: true,
   resetMocks: true,
   resetModules: true,
