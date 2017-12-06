@@ -10,6 +10,7 @@ module.exports = class ArticleModel {
     if (_.isEmpty(options)) {
       throw new Error([this.collection, 'model', 1000]);
     }
+
     return Article.create(options);
   }
 
@@ -26,12 +27,12 @@ module.exports = class ArticleModel {
       case 'idu':
         promise = Article.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
         break;
-      case 'all':
-        promise = Article.find(queries, null, options).exists('deletedAt', false);
-        break;
-      default:
       case 'id':
         promise = Article.findById(queries, null, options).exists('deletedAt', false);
+        break;
+      default:
+      case 'all':
+        promise = Article.find(queries, null, options).exists('deletedAt', false);
         break;
     }
 

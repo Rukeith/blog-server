@@ -21,8 +21,8 @@ module.exports = {
   },
   clearMocks: true,
   resetMocks: true,
-  resetModules: true,
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/model/init.js'],
   verbose: true,
   watchPathIgnorePatterns: [
     '<rootDir>/LICENSE',

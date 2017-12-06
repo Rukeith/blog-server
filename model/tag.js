@@ -31,12 +31,12 @@ module.exports = class TagModel {
       case 'idu':
         promise = Tag.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
         break;
-      case 'all':
-        promise = Tag.find(queries, null, options).exists('deletedAt', false);
-        break;
-      default:
       case 'id':
         promise = Tag.findById(queries, null, options).exists('deletedAt', false);
+        break;
+      default:
+      case 'all':
+        promise = Tag.find(queries, null, options).exists('deletedAt', false);
         break;
     }
     if (!_.isEmpty(populate)) promise.populate(populate);
