@@ -7,7 +7,7 @@ module.exports = {
     '<rootDir>/views/',
     '<rootDir>/config/',
     '<rootDir>/public/',
-    '<rootDir>/locales/',
+    '<rootDir>/jest.config.js/',
     '<rootDir>/node_modules/',
   ],
   coverageReporters: ['lcov', 'text', 'text-summary'],
@@ -22,7 +22,7 @@ module.exports = {
   clearMocks: true,
   resetMocks: true,
   testEnvironment: 'node',
-  setupFiles: ['<rootDir>/model/init.js'],
+  setupFiles: ['<rootDir>/index.js'],
   verbose: true,
   watchPathIgnorePatterns: [
     '<rootDir>/LICENSE',

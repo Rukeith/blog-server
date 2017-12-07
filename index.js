@@ -12,6 +12,7 @@ const locale = require('koa-locale');
 const helmet = require('koa-helmet');
 const logger = require('koa-logger');
 const router = require('koa-router')();
+const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
 
@@ -92,9 +93,9 @@ app.on('error', (err, ctx) => {
     }
     ctx.response.status = statusCode;
 
-    // 預設不輸出異常詳情
+    // Default not print error message
     let error = {};
-    // 如果是開發環境，則將異常堆棧輸出到頁面，方便開發調試
+    // If env is development then print error messages for debug
     if (app.env !== 'production' && _.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'extra')) {
       error = ctx.sentryError.extra;
     }
@@ -109,15 +110,22 @@ app.on('error', (err, ctx) => {
   }
 });
 
-const PORT = process.env.PORT ? process.env.PORT : 3000;
-app.listen(PORT, () => {
-  console.info('===========================================');
-  console.info(`===== Server is running at port: ${PORT} =====`);
-  console.info('===========================================');
+portfinder.basePort = process.env.PORT ? process.env.PORT : 3000;
+portfinder.getPortPromise().then((port) => {
+  app.listen(port, () => {
+    console.info('===========================================');
+    console.info(`===== Server is running at port: ${port} =====`);
+    console.info('===========================================');
 
-  // 註冊全域未捕獲異常的處理器
-  process.on('uncaughtException', err => console.error('Caught exception: ', err.stack));
-  process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
+    // Caught global exception error handle
+    process.on('uncaughtException', err => console.error('Caught exception: ', err.stack));
+    process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
+  });
+}).catch((error) => {
+  console.error(`=======PORT ${PORT} has been used=======`, error);
+  if (process.env.NODE_ENV !== 'test') {
+    process.exit(1);
+  }
 });
 
 module.exports = app;

@@ -11,11 +11,13 @@ describe('[Model] tag, ', () => {
       done();
     });
 
-    test.skip('Error: empty parameter', async () => {
+    test('Error: empty parameter', async () => {
       expect.assertions(1);
-      await expect(tagModel.create()).rejects.toMatchObject({
-        message: 'tag',
-      });
+      try {
+        await tagModel.create();
+      } catch (error) {
+        expect(error).toEqual(new Error(['tag', 'model', 1000]));
+      }
     });
 
     test('Success: create tag with name', async () => {
@@ -45,8 +47,13 @@ describe('[Model] tag, ', () => {
       await Tag.remove({}); // Clear Tag collection
     });
 
-    test.skip('Error: find tag with null or undefined', async () => {
-      await expect(tagModel.find(null)).toThrow();
+    test('Error: find tag with null or undefined', async () => {
+      expect.assertions(1);
+      try {
+        await tagModel.find(null);
+      } catch (error) {
+        expect(error).toEqual(new Error(['tag', 'model', 1001]));
+      }
     });
 
     test('Success: Find one tag', async () => {

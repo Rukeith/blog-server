@@ -11,11 +11,13 @@ describe('[Model] article', () => {
       done();
     });
 
-    test.skip('Error: empty parameter', async () => {
+    test('Error: empty parameter', async () => {
       expect.assertions(1);
-      await expect(articleModel.create()).rejects.toMatchObject({
-        message: 'tag',
-      });
+      try {
+        await articleModel.create();
+      } catch (error) {
+        expect(error).toEqual(new Error(['article', 'model', 1000]));
+      }
     });
 
     test('Success: create article with name', async () => {
@@ -64,8 +66,13 @@ describe('[Model] article', () => {
       await Article.remove({}); // Clear Article collection
     });
 
-    test.skip('Error: find article with null or undefined', async () => {
-      await expect(articleModel.find(null)).toThrow();
+    test('Error: find article with null or undefined', async () => {
+      expect.assertions(1);
+      try {
+        await articleModel.find(null);
+      } catch (error) {
+        expect(error).toEqual(new Error(['article', 'model', 1001]));
+      }
     });
 
     test('Success: Find one article', async () => {

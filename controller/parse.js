@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const errorLevel = require('../config/error.json');
+const lanUS = require('../locales/us.json');
 
 module.exports = {
   /**
@@ -13,7 +14,12 @@ module.exports = {
     // Translate message
     const path = `${type}${_.upperFirst(file)}`;
     const translate = `success-${path}-${code}`;
-    const message = ctx.i18n.__(translate) || 'Translate message not found';
+    let message;
+    if (process.env.NODE_ENV === 'test') {
+      message = lanUS[translate];
+    } else {
+      message = ctx.i18n.__(translate) || 'Translate message not found';
+    }
     ctx.status = status;
     ctx.response.body = { status, message, data };
   },
@@ -36,7 +42,12 @@ module.exports = {
       const path = `${ttype}${_.upperFirst(tfile)}`;
       const translate = `error-${path}-${tcode}`;
       const level = errorLevel[translate] || 'warning';
-      const message = ctx.i18n.__(translate) || 'Error code not found';
+      let message;
+      if (process.env.NODE_ENV === 'test') {
+        message = lanUS[translate];
+      } else {
+        message = ctx.i18n.__(translate) || 'Error code not found';
+      }
       return isExtra ? message : [ttype, path, level, message];
     }
 
@@ -62,7 +73,9 @@ module.exports = {
     };
 
     ctx.status = status;
-    ctx.app.emit('error', new Error(message), ctx);
+    if (process.env.NODE_ENV !== 'test') {
+      ctx.app.emit('error', new Error(message), ctx);
+    }
   },
 
   filterNull: (options = {}) => _.pickBy(options, value => !_.isNil(value)),
