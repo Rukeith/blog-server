@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=deployment node index.js",
-    "dev": "NODE_ENV=deployment nodemon index.js",
-    "test": "jest --no-cache",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=deployment nodemon index.js",
+    "test": "cross-env NODE_ENV=test jest --no-cache --forceExit --runInBand",
     "lint": "./node_modules/.bin/eslint --quiet ./*",
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
@@ -40,11 +40,12 @@
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.0.2",
+    "cross-env": "^5.1.1",
     "eslint": "^4.12.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "jest": "^21.2.1",
     "node-mocks-http": "^1.6.6",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.5"
   }
 }
