@@ -122,7 +122,7 @@ portfinder.getPortPromise().then((port) => {
     process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
   });
 }).catch((error) => {
-  console.error(`=======PORT ${PORT} has been used=======`, error);
+  console.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
   if (process.env.NODE_ENV !== 'test') {
     process.exit(1);
   }
