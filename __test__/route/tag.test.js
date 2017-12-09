@@ -189,4 +189,202 @@ describe('[Route] tag', () => {
       });
     });
   });
+
+  describe('Get single tag', () => {
+    let TEST_TAG;
+    let TEST_ARTICLES = [];
+
+    beforeEach(async () => {
+      TEST_ARTICLES = [];
+      const now = moment().valueOf();
+      const article1 = await Article.create({
+        title: `jest-test-title-${now}`,
+        content: `jest-test-content-${now}`,
+        url: `jest-test-url-${now}`,
+        begins: `jest-test-begins-${now}`,
+      });
+      TEST_ARTICLES.push(article1);
+      const article2 = await Article.create({
+        title: `jest-test-title-${now}`,
+        content: `jest-test-content-${now}`,
+        url: `jest-test-url-${now}`,
+        begins: `jest-test-begins-${now}`,
+      });
+      TEST_ARTICLES.unshift(article2);
+      TEST_TAG = await Tag.create({ name: `jest-test-${now}`, articles: [article1.id, article2.id] });
+    });
+
+    afterAll(() => Article.remove({}));
+
+    test('Error: get single tag with not existed tag id', async () => {
+      const response = await request(app.callback()).get('/tags/test');
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1004']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1004']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: get single tag', async () => {
+      const response = await request(app.callback()).get(`/tags/${TEST_TAG.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-tagApi-1002']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveProperty('id', TEST_TAG.id);
+      expect(body.data).toHaveProperty('name', TEST_TAG.name);
+      expect(body.data).toHaveProperty('createdAt');
+      expect(body.data).toHaveProperty('updatedAt');
+      expect(body.data).toHaveProperty('articles');
+      expect(body.data.articles).toHaveLength(2);
+
+      _.forEach(body.data.articles, (article, index) => {
+        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
+        expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
+        expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);
+        expect(article).toHaveProperty('coverImages', []);
+        expect(article).toHaveProperty('createdAt');
+        expect(article).toHaveProperty('updatedAt');
+      });
+    });
+
+    test('Success: get single tag with parameters', async () => {
+      const response = await request(app.callback())
+        .get(`/tags/${TEST_TAG.id}`).query({
+          limit: 1,
+          offset: 1,
+          direct: 'asc',
+          sortby: 'createdAt',
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-tagApi-1002']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveProperty('id', TEST_TAG.id);
+      expect(body.data).toHaveProperty('name', TEST_TAG.name);
+      expect(body.data).toHaveProperty('createdAt');
+      expect(body.data).toHaveProperty('updatedAt');
+      expect(body.data).toHaveProperty('articles');
+      expect(body.data.articles).toHaveLength(1);
+
+      _.forEach(body.data.articles, (article, index) => {
+        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
+        expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
+        expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);
+        expect(article).toHaveProperty('coverImages', []);
+        expect(article).toHaveProperty('createdAt');
+        expect(article).toHaveProperty('updatedAt');
+      });
+    });
+
+    test('Success: get single tag with invalid parameters', async () => {
+      const response = await request(app.callback())
+        .get(`/tags/${TEST_TAG.id}`).query({
+          limit: -1,
+          offset: -1,
+          direct: 'ascx',
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-tagApi-1002']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveProperty('id', TEST_TAG.id);
+      expect(body.data).toHaveProperty('name', TEST_TAG.name);
+      expect(body.data).toHaveProperty('createdAt');
+      expect(body.data).toHaveProperty('updatedAt');
+      expect(body.data).toHaveProperty('articles');
+      expect(body.data.articles).toHaveLength(2);
+
+      _.forEach(body.data.articles, (article, index) => {
+        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
+        expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
+        expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);
+        expect(article).toHaveProperty('coverImages', []);
+        expect(article).toHaveProperty('createdAt');
+        expect(article).toHaveProperty('updatedAt');
+      });
+    });
+  });
+
+  describe('Update tag name', () => {
+    let TEST_TAG;
+
+    beforeEach(async () => {
+      TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+    });
+
+    test('Error: update tag\'s name with invalid parameters', async () => {
+      const response = await request(app.callback())
+        .patch('/tags/test').send({ name: ' ' });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1005']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1005']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: update tag\'s name with not existed tag', async () => {
+      const response = await request(app.callback())
+        .patch('/tags/test').send({ name: TEST_TAG.name });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1006']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1006']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: update tag\'s name', async () => {
+      const newTagName = `jest-test-new-tag-name-${moment().valueOf()}`;
+      const response = await request(app.callback())
+        .patch(`/tags/${TEST_TAG.id}`).send({ name: newTagName });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-tagApi-1003']);
+    });
+  });
+
+  describe('Delete tag', () => {
+    let TEST_TAG;
+
+    beforeEach(async () => {
+      TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+    });
+
+    test('Error: update tag\'s name with not existed tag', async () => {
+      const response = await request(app.callback()).del('/tags/test');
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1007']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1007']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: delete tag', async () => {
+      const response = await request(app.callback()).del(`/tags/${TEST_TAG.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-tagApi-1004']);
+    });
+  });
 });

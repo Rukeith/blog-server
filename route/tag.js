@@ -6,9 +6,9 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const tagModel = new TagModel();
 
-const tagSuccessResponse = (ctx, status = HTTPStatus.OK, code, data) =>
+const tagSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) =>
   successResponse(ctx, [status, 'tag', 'api', code, data]);
-const tagErrorResponse = (ctx, status = HTTPStatus.INTERNAL_SERVER_ERROR, code, error) =>
+const tagErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) =>
   errorResponse(ctx, [status, 'tag', 'api', code, error]);
 
 module.exports = (api) => {
@@ -67,15 +67,16 @@ module.exports = (api) => {
     let { names } = ctx.request.body;
     names = _.dropWhile([...new Set(_.map(names, _.trim))], _.isEmpty);
     if (_.isEmpty(names)) {
-      return tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+      tagErrorResponse(ctx, 1000);
+      return;
     }
 
     try {
       const tags = await Promise.all(_.map(names, name => tagModel.create(name)));
       const formatTags = _.map(tags, tag => ({ id: tag.id, name: tag.name }));
-      tagSuccessResponse(ctx, HTTPStatus.CREATED, 1000, formatTags);
-    } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
+      tagSuccessResponse(ctx, 1000, HTTPStatus.CREATED, formatTags);
+    } catch (error) { /* istanbul ignore next */
+      tagErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -178,9 +179,9 @@ module.exports = (api) => {
           })),
         },
       }));
-      tagSuccessResponse(ctx, HTTPStatus.OK, 1001, formatTags);
-    } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1002, error);
+      tagSuccessResponse(ctx, 1001, HTTPStatus.OK, formatTags);
+    } catch (error) { /* istanbul ignore next */
+      tagErrorResponse(ctx, 1002, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -260,7 +261,7 @@ module.exports = (api) => {
 
     const populate = {
       path: 'articles',
-      options: { sort: { createdAt: 'desc' } },
+      options,
       select: {
         url: 1,
         title: 1,
@@ -272,8 +273,9 @@ module.exports = (api) => {
 
     try {
       const tag = await tagModel.find(tagId, 'id', {}, populate);
+      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
-        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
+        tagErrorResponse(ctx, 1003);
         return;
       }
 
@@ -292,9 +294,9 @@ module.exports = (api) => {
           coverImages: article.coverImages,
         })),
       };
-      tagSuccessResponse(ctx, HTTPStatus.OK, 1002, formatTag);
+      tagSuccessResponse(ctx, 1002, HTTPStatus.OK, formatTag);
     } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1003, error);
+      tagErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -351,19 +353,20 @@ module.exports = (api) => {
     let { name } = ctx.request.body;
     name = _.trim(name);
     if (_.isEmpty(name)) {
-      tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1004);
+      tagErrorResponse(ctx, 1005);
       return;
     }
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { name });
+      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
-        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
+        tagErrorResponse(ctx, 1003);
         return;
       }
-      tagSuccessResponse(ctx, HTTPStatus.OK, 1003);
+      tagSuccessResponse(ctx, 1003);
     } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1005, error);
+      tagErrorResponse(ctx, 1006, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -419,13 +422,14 @@ module.exports = (api) => {
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { deletedAt: new Date() });
+      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
-        tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1002);
+        tagErrorResponse(ctx, 1003);
         return;
       }
-      tagSuccessResponse(ctx, HTTPStatus.OK, 1004);
+      tagSuccessResponse(ctx, 1004);
     } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1006, error);
+      tagErrorResponse(ctx, 1007, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 };
