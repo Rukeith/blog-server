@@ -1,0 +1,15 @@
+image: node:latest
+
+services:
+  - mongo:latest
+
+cache:
+  paths:
+  - views/
+  - public/
+  - node_modules/
+
+test_db:
+  script:
+   - npm install
+   - npm test
