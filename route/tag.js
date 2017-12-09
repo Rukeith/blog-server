@@ -65,16 +65,17 @@ module.exports = (api) => {
    */
   api.post('/tags', validateParameters('post/tags'), async (ctx) => {
     let { names } = ctx.request.body;
-    names = [...new Set(_.map(names, _.trim))];
+    names = _.dropWhile([...new Set(_.map(names, _.trim))], _.isEmpty);
+    if (_.isEmpty(names)) {
+      return tagErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+    }
 
     try {
-      const tags = await Promise.all(_.map(names, name => ((_.isEmpty(name)) ?
-        Promise.resolve() : tagModel.create(name))));
-
+      const tags = await Promise.all(_.map(names, name => tagModel.create(name)));
       const formatTags = _.map(tags, tag => ({ id: tag.id, name: tag.name }));
       tagSuccessResponse(ctx, HTTPStatus.CREATED, 1000, formatTags);
     } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1000, error);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
     }
   });
 
@@ -129,19 +130,26 @@ module.exports = (api) => {
    *    }
    */
   api.get('/tags', validateParameters('get/tags'), async (ctx) => {
-    const {
+    let {
       offset = 0,
       limit = 100,
       direct = 'desc',
-      sortby = 'createdAt',
     } = ctx.query;
+    const { sortby = 'createdAt' } = ctx.query;
+
+    if (!_.isInteger(offset)) offset = _.toInteger(offset);
+    if (offset < 0) offset = 0;
+    if (!_.isInteger(limit)) limit = _.toInteger(limit);
+    if (limit > 100 || limit < 0) limit = 100;
+    if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
+
     const options = {
       limit,
       sort: {},
       skip: offset,
     };
-    if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
-    if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
+    options.sort[sortby] = direct;
+
     const populate = {
       path: 'articles',
       options: { sort: { createdAt: 'desc' } },
@@ -172,7 +180,7 @@ module.exports = (api) => {
       }));
       tagSuccessResponse(ctx, HTTPStatus.OK, 1001, formatTags);
     } catch (error) {
-      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
+      tagErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1002, error);
     }
   });
 
@@ -230,19 +238,26 @@ module.exports = (api) => {
    */
   api.get('/tags/:tagId', validateParameters('get/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
-    const {
+    let {
       offset = 0,
       limit = 100,
       direct = 'desc',
-      sortby = 'createdAt',
     } = ctx.query;
+    const { sortby = 'createdAt' } = ctx.query;
+
+    if (!_.isInteger(offset)) offset = _.toInteger(offset);
+    if (offset < 0) offset = 0;
+    if (!_.isInteger(limit)) limit = _.toInteger(limit);
+    if (limit > 100 || limit < 0) limit = 100;
+    if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
+
     const options = {
       limit,
       sort: {},
       skip: offset,
     };
-    if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
-    if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
+    options.sort[sortby] = direct;
+
     const populate = {
       path: 'articles',
       options: { sort: { createdAt: 'desc' } },

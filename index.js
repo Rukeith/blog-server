@@ -1,3 +1,4 @@
+require('./model/init.js');
 const Koa = require('koa');
 const _ = require('lodash');
 const path = require('path');
@@ -69,7 +70,6 @@ const pug = new Pug({
 });
 pug.use(app);
 
-require('./model/init.js');
 const index = require('./route/index.js');
 const tag = require('./route/tag.js');
 const article = require('./route/article.js');

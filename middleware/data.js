@@ -25,10 +25,6 @@ module.exports = {
           ctx.verifyParams({
             sortby: { type: 'string', required: false },
             direct: { type: 'string', required: false },
-            offset: { type: 'int', min: 0, required: false },
-            limit: {
-              type: 'int', min: 0, max: 100, required: false,
-            },
           });
           break;
         case 'get/articles/:articleId':
@@ -73,10 +69,6 @@ module.exports = {
           ctx.verifyParams({
             sortby: { type: 'string', required: false },
             direct: { type: 'string', required: false },
-            offset: { type: 'int', min: 0, required: false },
-            limit: {
-              type: 'int', min: 0, max: 100, required: false,
-            },
           });
           break;
         case 'get/tags/:tagId':
@@ -84,10 +76,6 @@ module.exports = {
             tagId: { type: 'string' },
             sortby: { type: 'string', required: false },
             direct: { type: 'string', required: false },
-            offset: { type: 'int', min: 0, required: false },
-            limit: {
-              type: 'int', min: 0, max: 50, required: false,
-            },
           });
           break;
         case 'patch/tags/:tagId':

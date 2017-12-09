@@ -37,11 +37,10 @@ module.exports = {
    */
   errorResponse: (ctx, options = []) => {
     const [status, type, file, code, error] = options;
-
     function translateError(ttype, tfile, tcode, isExtra = false) {
       const path = `${ttype}${_.upperFirst(tfile)}`;
       const translate = `error-${path}-${tcode}`;
-      const level = errorLevel[translate] || 'warning';
+      const level = errorLevel[`${path}-${tcode}`] || 'warning';
       let message;
       if (process.env.NODE_ENV === 'test') {
         message = lanUS[translate];
@@ -69,13 +68,11 @@ module.exports = {
       req: ctx.request,
       tags: { path, type: translateType },
       fingerprint: [process.env.NODE_ENV],
-      level: (process.env.NODE_ENV === 'production') ? level : 'debug',
+      level: level || 'error',
     };
 
     ctx.status = status;
-    if (process.env.NODE_ENV !== 'test') {
-      ctx.app.emit('error', new Error(message), ctx);
-    }
+    ctx.app.emit('error', new Error(message), ctx);
   },
 
   filterNull: (options = {}) => _.pickBy(options, value => !_.isNil(value)),
