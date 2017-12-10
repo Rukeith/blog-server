@@ -388,6 +388,7 @@ describe('[Route] tag', () => {
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1004']);
+      expect(body).not.toHaveProperty('data');
 
       const tag = await Tag.findById(TEST_TAG.id);
       const tagJson = tag.toJSON();

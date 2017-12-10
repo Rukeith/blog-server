@@ -48,11 +48,6 @@ module.exports = {
             push: { type: 'array', itemType: 'string', required: false },
           });
           break;
-        case 'put/articles/:articleId/publish':
-          ctx.verifyParams({
-            articleId: { type: 'string' },
-          });
-          break;
         case 'delete/articles/:articleId':
           ctx.verifyParams({
             articleId: { type: 'string' },

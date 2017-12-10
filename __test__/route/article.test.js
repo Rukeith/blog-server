@@ -75,6 +75,7 @@ describe('[Route] article', () => {
       expect(status).toBe(HTTPStatus.CREATED);
       expect(body).toHaveProperty('status', HTTPStatus.CREATED);
       expect(body).toHaveProperty('message', langUS['success-articleApi-1000']);
+      expect(body).not.toHaveProperty('data');
 
       tag = await Tag.findById(tag.id);
       const tagJson = tag.toJSON();
@@ -99,6 +100,7 @@ describe('[Route] article', () => {
       expect(status).toBe(HTTPStatus.CREATED);
       expect(body).toHaveProperty('status', HTTPStatus.CREATED);
       expect(body).toHaveProperty('message', langUS['success-articleApi-1000']);
+      expect(body).not.toHaveProperty('data');
 
       const article = await Article.findOne({ title: { $eq: `jest-test-title-${now}` } });
       const articleJson = article.toJSON();
@@ -292,23 +294,26 @@ describe('[Route] article', () => {
     });
 
     test('Success: update article', async () => {
-      const articleTitle = `jest-test-title-${moment().valueOf()}`;
+      const articleUrl = `jest-test-url-${moment().valueOf()}`;
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}`).send({ title: articleTitle });
+        .put(`/articles/${TEST_ARTICLE.id}`).send({ url: articleUrl });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-articleApi-1003']);
+      expect(body).not.toHaveProperty('data');
 
       const article = await Article.findById(TEST_ARTICLE.id);
       const articleJson = article.toJSON();
-      expect(articleJson).toHaveProperty('title', articleTitle);
+      expect(articleJson).toHaveProperty('url', articleUrl);
       expect(articleJson.createdAt).not.toBe(articleJson.updatedAt);
     });
   });
 
-  describe.skip('Delete article', () => {
+  describe('Update article\'s tags ', () => {
+    let TEST_PUSH_TAG;
+    let TEST_PULL_TAG;
     let TEST_ARTICLE;
 
     beforeEach(async () => {
@@ -319,26 +324,212 @@ describe('[Route] article', () => {
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
       });
+
+      TEST_PUSH_TAG = await Tag.create({
+        name: `jest-test-push-${now}`,
+        articles: [TEST_ARTICLE.id],
+      });
+      TEST_PULL_TAG = await Tag.create({ name: `jest-test-pull-${now}` });
     });
 
-    test('Error: update tag\'s name with not existed tag', async () => {
+    afterEach(() => Tag.remove({}));
+
+    test('Error: update article\'s tags with unexisted id', async () => {
+      const response = await request(app.callback())
+        .put('/articles/test/tags');
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1007']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1007']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: update article\'s tags push with invalid tags ', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({ push: ['test', TEST_PULL_TAG.id] });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1004']);
+      expect(body).toHaveProperty('data', ['Server Error: tag test is not existed']);
+
+      const tag = await Tag.findById(TEST_PULL_TAG.id);
+      const tagJson = tag.toJSON();
+      expect(tagJson).toHaveProperty('articles', [TEST_ARTICLE._id]);
+    });
+
+    test('Success: update article\'s tags pull with invalid tags ', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({ pull: ['test', TEST_PUSH_TAG.id] });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1004']);
+      expect(body).toHaveProperty('data', ['Server Error: tag test is not existed']);
+
+      const tag = await Tag.findById(TEST_PUSH_TAG.id);
+      const tagJson = tag.toJSON();
+      expect(tagJson).toHaveProperty('articles', []);
+    });
+
+    test('Success: update article\'s tags pull and push with same tags ', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({
+          push: [TEST_PUSH_TAG.id],
+          pull: [TEST_PUSH_TAG.id],
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1004']);
+      expect(body).not.toHaveProperty('data');
+
+      const tag = await Tag.findById(TEST_PUSH_TAG.id);
+      const tagJson = tag.toJSON();
+      expect(tagJson).toHaveProperty('articles', [TEST_ARTICLE._id]);
+    });
+
+    test('Success: update article\'s tags pull with invalid tags ', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({
+          push: [TEST_PULL_TAG.id],
+          pull: [TEST_PUSH_TAG.id],
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1004']);
+      expect(body).not.toHaveProperty('data');
+
+      const [pullTag, pushTag] = await Promise.all([
+        Tag.findById(TEST_PUSH_TAG.id),
+        Tag.findById(TEST_PULL_TAG.id),
+      ]);
+      const pullTagJson = pullTag.toJSON();
+      const pushTagJson = pushTag.toJSON();
+      expect(pullTagJson).toHaveProperty('articles', []);
+      expect(pushTagJson).toHaveProperty('articles', [TEST_ARTICLE._id]);
+    });
+  });
+
+  describe('Publish articles', () => {
+    let TEST_PUBLISH_ARTICLE;
+    let TEST_UNPUBLISH_ARTICLE;
+
+    beforeEach(async () => {
+      const now = moment().valueOf();
+      TEST_PUBLISH_ARTICLE = await Article.create({
+        publishedAt: new Date(),
+        url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
+        begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+      });
+
+      TEST_UNPUBLISH_ARTICLE = await Article.create({
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+      });
+    });
+
+    test('Success: publish articles with invalid article id ', async () => {
+      const response = await request(app.callback())
+        .put('/articles/publish/blog').send({ test: 'test' });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1005']);
+      expect(body).toHaveProperty('data', ['Server Error: article test is not existed']);
+    });
+
+    test('Success: publish articles', async () => {
+      const params = {};
+      params[TEST_PUBLISH_ARTICLE.id] = false;
+      params[TEST_UNPUBLISH_ARTICLE.id] = true;
+      const response = await request(app.callback())
+        .put('/articles/publish/blog').send(params);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1005']);
+      expect(body).not.toHaveProperty('data');
+
+      const [unpublishArticle, publishArticle] = await Promise.all([
+        Article.findById(TEST_PUBLISH_ARTICLE.id),
+        Article.findById(TEST_UNPUBLISH_ARTICLE.id),
+      ]);
+      const publishArticleJson = publishArticle.toJSON();
+      const unpublishArticleJson = unpublishArticle.toJSON();
+      expect(publishArticleJson).toHaveProperty('publishedAt');
+      expect(unpublishArticleJson).not.toHaveProperty('publishedAt');
+    });
+  });
+
+  describe('Delete article', () => {
+    let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
+
+    beforeEach(async () => {
+      const now = moment().valueOf();
+      TEST_ARTICLE = await Article.create({
+        url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
+        begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+      });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+      });
+    });
+
+    test('Error: delete article with not existed id', async () => {
       const response = await request(app.callback()).del('/articles/test');
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
-      expect(body).toHaveProperty('level', errorLevel['tagApi-1007']);
-      expect(body).toHaveProperty('message', langUS['error-tagApi-1007']);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1009']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1009']);
       expect(body).toHaveProperty('extra', '');
     });
 
-    test('Success: delete tag', async () => {
-      const response = await request(app.callback()).del(`/tags/${TEST_TAG.id}`);
+    test('Error: delete article with deleted article', async () => {
+      const response = await request(app.callback()).del(`/articles/${TEST_DELETE_ARTICLE.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: delete article', async () => {
+      const response = await request(app.callback()).del(`/articles/${TEST_ARTICLE.id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
-      expect(body).toHaveProperty('message', langUS['success-tagApi-1004']);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1006']);
+      expect(body).not.toHaveProperty('data');
+
+      const article = await Article.findById(TEST_ARTICLE.id);
+      const articleJson = article.toJSON();
+      expect(articleJson).toHaveProperty('deletedAt');
     });
   });
 });

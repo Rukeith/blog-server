@@ -428,8 +428,15 @@ module.exports = (api) => {
   api.put('/articles/:articleId/tags', validateParameters('put/articles/:articleId/tags'), async (ctx) => {
     const { articleId } = ctx.params;
     const { push = [], pull = [] } = ctx.request.body;
+    const diff = _.intersectionWith(push, pull, _.isEqual);
 
     try {
+      if (!_.isEmpty(diff)) {
+        _.forEach(diff, (value) => {
+          push.pop(value);
+          pull.pop(value);
+        });
+      }
       const article = await articleModel.find(articleId, 'id');
       /* istanbul ignore if */
       if (_.isNil(article)) {
@@ -440,14 +447,13 @@ module.exports = (api) => {
       const promises = [];
       if (!_.isEmpty(push)) {
         _.forEach(push, (tagId) => {
-          const pushPromise = new Promise(async (resolve, reject) => {
+          const pushPromise = new Promise(async (resolve) => {
             try {
               const tag = await tagModel.find(tagId, 'id');
-              if (_.isEmpty(tag)) return reject(new Error(`Tag is not existed ${tagId}`));
-              await tagModel.find(tagId, 'idu', { $push: { articles: articleId } });
+              await tagModel.find(tag.id, 'idu', { $push: { articles: articleId } });
               return resolve();
             } catch (error) {
-              return reject(error);
+              return resolve(`Server Error: tag ${tagId} is not existed`);
             }
           });
           promises.push(pushPromise);
@@ -455,33 +461,40 @@ module.exports = (api) => {
       }
       if (!_.isEmpty(pull)) {
         _.forEach(pull, (tagId) => {
-          const pullPromise = new Promise(async (resolve, reject) => {
+          const pullPromise = new Promise(async (resolve) => {
             try {
               const tag = await tagModel.find(tagId, 'id');
-              if (_.isEmpty(tag)) return reject(new Error(`Tag is not existed ${tagId}`));
-              await tagModel.find(tagId, 'idu', { $pull: { articles: articleId } });
-              resolve();
+              await tagModel.find(tag.id, 'idu', { $pull: { articles: articleId } });
+              return resolve();
             } catch (error) {
-              reject(error);
+              return resolve(`Server Error: tag ${tagId} is not existed`);
             }
           });
           promises.push(pullPromise);
         });
       }
-      await Promise.all(promises);
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1004);
+
+      const results = await Promise.all(promises);
+      results.forEach((value) => {
+        if (_.isNil(value)) results.pop(value);
+      });
+      if (_.isNil(results[0])) {
+        articleSuccessResponse(ctx, HTTPStatus.OK, 1004);
+      } else {
+        articleSuccessResponse(ctx, HTTPStatus.OK, 1004, results);
+      }
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1009, error);
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1007, error);
     }
   });
 
   /**
-   * @api {put} /articles/:articleId/publish Publish or dispublish articles
+   * @api {put} /articles/publish/blog Publish or unpublish articles
    * @apiVersion 0.1.0
-   * @apiName PublishArticle
+   * @apiName PublishArticles
    * @apiGroup Article
    * @apiPermission admin
-   * @apiDescription Publish or dispublish articles
+   * @apiDescription Publish or unpublish articles
    *
    * @apiHeader {String} Rukeith-Token Access token
    * @apiHeaderExample {json} Token-Example
@@ -492,7 +505,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {Boolean} publish true is publishe and false is unpublish
+   * @apiParam {String} {{articleId}} true is publishe and false is unpublish
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -522,27 +535,39 @@ module.exports = (api) => {
    *      "message": "Publish articles processing failed"
    *    }
    */
-  api.put('/articles/:articleId/publish', validateParameters('put/articles/:articleId/publish'), async (ctx) => {
-    const { articleId } = ctx.params;
-    const { publish } = ctx.request.body;
+  api.put('/articles/publish/blog', async (ctx) => {
+    const publishedAt = new Date();
+    const params = ctx.request.body;
 
     try {
-      const article = await articleModel.find(articleId, 'id');
-      if (_.isNil(article)) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1010);
-      }
+      const results = await Promise.all(_.map(params, (publish, articleId) => {
+        return new Promise(async (resolve) => {
+          try {
+            await articleModel.find(articleId, 'id');
+            const options = {};
+            if (publish === 'true' || publish === true) {
+              options.$set = { publishedAt };
+            } else {
+              options.$unset = { publishedAt: 1 };
+            }
+            await articleModel.find(articleId, 'idu', options);
+            resolve();
+          } catch (error) {
+            resolve(`Server Error: article ${articleId} is not existed`);
+          }
+        });
+      }));
 
-      const options = {};
-      const publishedAt = new Date();
-      if (publish) {
-        options.$set = { publishedAt };
+      results.forEach((value) => {
+        if (_.isNil(value)) results.pop(value);
+      });
+      if (_.isNil(results[0])) {
+        articleSuccessResponse(ctx, HTTPStatus.OK, 1005);
       } else {
-        options.$unset = { publishedAt: 1 };
+        articleSuccessResponse(ctx, HTTPStatus.OK, 1005, results);
       }
-      await articleModel.find(articleId, 'idu', options);
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1005);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1011, error);
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1008, error);
     }
   });
 
@@ -598,15 +623,15 @@ module.exports = (api) => {
 
     try {
       const article = await articleModel.find(articleId, 'id');
-      /* istanbul ignore if */
       if (_.isNil(article)) {
-        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1012);
+        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
         return;
       }
+
       await articleModel.find(articleId, 'idu', { deletedAt: new Date() });
       articleSuccessResponse(ctx, HTTPStatus.OK, 1006);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1013);
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1009);
     }
   });
 };

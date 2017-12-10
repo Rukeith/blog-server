@@ -21,6 +21,7 @@ module.exports = {
       message = ctx.i18n.__(translate) || 'Translate message not found';
     }
     ctx.status = status;
+    console.log('data =', data);
     ctx.response.body = { status, message, data };
   },
 
