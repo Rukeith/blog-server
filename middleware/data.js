@@ -35,9 +35,9 @@ module.exports = {
         case 'put/articles/:articleId':
           ctx.verifyParams({
             articleId: { type: 'string' },
+            url: { type: 'string', required: false },
             title: { type: 'string', required: false },
             content: { type: 'string', required: false },
-            url: { type: 'url', required: false },
             coverImages: { type: 'array', itemType: 'url', required: false },
           });
           break;
@@ -51,7 +51,6 @@ module.exports = {
         case 'put/articles/:articleId/publish':
           ctx.verifyParams({
             articleId: { type: 'string' },
-            // publish: { type: 'boolean' },
           });
           break;
         case 'delete/articles/:articleId':

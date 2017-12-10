@@ -83,8 +83,8 @@ module.exports = (api) => {
       begins,
       content,
     } = ctx.request.body;
-    tags = [...new Set(tags)];
-    coverImages = [...new Set(coverImages)];
+    tags = _.dropWhile([...new Set(_.map(tags, _.trim))], _.isEmpty);
+    coverImages = _.dropWhile([...new Set(_.map(coverImages, _.trim))], _.isEmpty);
     const params = {
       title,
       begins,
@@ -96,8 +96,10 @@ module.exports = (api) => {
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
         if (existArticle) {
-          return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+          articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+          return;
         }
+        params.url = url;
       } else {
         params.url = new Date().getTime();
       }
@@ -166,12 +168,19 @@ module.exports = (api) => {
    *    }
    */
   api.get('/articles', validateParameters('get/articles'), async (ctx) => {
-    const {
+    let {
       offset = 0,
       limit = 10,
       direct = 'desc',
-      sortby = 'createdAt',
     } = ctx.query;
+    const { sortby = 'createdAt' } = ctx.query;
+
+    if (!_.isInteger(offset)) offset = _.toInteger(offset);
+    if (offset < 0) offset = 0;
+    if (!_.isInteger(limit)) limit = _.toInteger(limit);
+    if (limit > 10 || limit < 0) limit = 10;
+    if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
+
     const options = {
       limit,
       sort: {},
@@ -184,8 +193,7 @@ module.exports = (api) => {
         coverImages: 1,
       },
     };
-    if (!_.isEmpty(sortby)) options.sort[sortby] = direct || 'desc';
-    if (!_.isEmpty(direct)) options.sort.createdAt = direct || 'desc';
+    options.sort[sortby] = direct;
 
     try {
       const articles = await articleModel.find({}, 'all', options);
@@ -194,8 +202,8 @@ module.exports = (api) => {
         url: article.url,
         title: article.title,
         begins: article.begins,
-        content: article.content,
         createdAt: article.createdAt,
+        coverImages: article.coverImages,
       }));
       articleSuccessResponse(ctx, HTTPStatus.OK, 1001, formatArticles);
     } catch (error) {
@@ -254,13 +262,16 @@ module.exports = (api) => {
     const { articleId } = ctx.params;
     try {
       const article = await articleModel.find(articleId, 'id');
+      /* istanbul ignore if */
       if (_.isNil(article)) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        return;
       }
+
       const formatArticle = {
         id: article.id,
-        title: article.title,
         url: article.url,
+        title: article.title,
         begins: article.begins,
         content: article.content,
         createdAt: article.createdAt,
@@ -332,24 +343,32 @@ module.exports = (api) => {
   api.put('/articles/:articleId', validateParameters('put/articles/:articleId'), async (ctx) => {
     const { articleId } = ctx.params;
     const { url, ...options } = ctx.request.body;
+    if (_.isEmpty(url) && _.isEmpty(options)) {
+      articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1005);
+      return;
+    }
 
     try {
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
         if (existArticle) {
-          return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1005);
+          articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+          return;
         }
         options.url = url;
       }
+
       const article = await articleModel.find(articleId, 'id');
+      /* istanbul ignore if */
       if (_.isNil(article)) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1006);
+        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        return;
       }
 
       await articleModel.find(articleId, 'idu', options);
       articleSuccessResponse(ctx, HTTPStatus.OK, 1003);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1007, error);
+      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1006, error);
     }
   });
 
@@ -412,8 +431,10 @@ module.exports = (api) => {
 
     try {
       const article = await articleModel.find(articleId, 'id');
+      /* istanbul ignore if */
       if (_.isNil(article)) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1008);
+        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        return;
       }
 
       const promises = [];
@@ -424,9 +445,9 @@ module.exports = (api) => {
               const tag = await tagModel.find(tagId, 'id');
               if (_.isEmpty(tag)) return reject(new Error(`Tag is not existed ${tagId}`));
               await tagModel.find(tagId, 'idu', { $push: { articles: articleId } });
-              resolve();
+              return resolve();
             } catch (error) {
-              reject(error);
+              return reject(error);
             }
           });
           promises.push(pushPromise);
@@ -577,8 +598,10 @@ module.exports = (api) => {
 
     try {
       const article = await articleModel.find(articleId, 'id');
+      /* istanbul ignore if */
       if (_.isNil(article)) {
-        return articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1012);
+        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1012);
+        return;
       }
       await articleModel.find(articleId, 'idu', { deletedAt: new Date() });
       articleSuccessResponse(ctx, HTTPStatus.OK, 1006);

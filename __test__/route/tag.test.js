@@ -357,6 +357,9 @@ describe('[Route] tag', () => {
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1003']);
+
+      const tag = await Tag.findById(TEST_TAG.id);
+      expect(tag.name).toBe(newTagName);
     });
   });
 
@@ -385,6 +388,10 @@ describe('[Route] tag', () => {
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1004']);
+
+      const tag = await Tag.findById(TEST_TAG.id);
+      const tagJson = tag.toJSON();
+      expect(tagJson).toHaveProperty('deletedAt');
     });
   });
 });
