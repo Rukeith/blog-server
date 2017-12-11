@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node index.js",
-    "dev": "cross-env NODE_ENV=deployment nodemon index.js",
-    "test": "cross-env NODE_ENV=test jest --no-cache --forceExit --runInBand",
+    "start": "./node_modules/.bin/cross-env NODE_ENV=production node index.js",
+    "dev": "./node_modules/.bin/cross-env NODE_ENV=deployment nodemon index.js",
+    "test": "jest --no-cache --forceExit --runInBand",
     "lint": "./node_modules/.bin/eslint --quiet ./*",
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
   "engines": {
-    "node": ">=9.2.0"
+    "node": ">=9.2.1"
   },
   "repository": "https://github.com/Rukeith/blog-server.git",
   "author": "Rukeith <fenglan.crazydance@gmail.com>",
