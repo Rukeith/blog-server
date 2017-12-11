@@ -8,9 +8,9 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 const tagModel = new TagModel();
 const articleModel = new ArticleModel();
 
-const articleSuccessResponse = (ctx, status = HTTPStatus.OK, code, data) =>
+const articleSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) =>
   successResponse(ctx, [status, 'article', 'api', code, data]);
-const articleErrorResponse = (ctx, status = HTTPStatus.INTERNAL_SERVER_ERROR, code, error) =>
+const articleErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) =>
   errorResponse(ctx, [status, 'article', 'api', code, error]);
 
 module.exports = (api) => {
@@ -96,7 +96,7 @@ module.exports = (api) => {
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
         if (existArticle) {
-          articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+          articleErrorResponse(ctx, 1000);
           return;
         }
         params.url = url;
@@ -110,9 +110,9 @@ module.exports = (api) => {
         const options = { $addToSet: { articles: article.id } };
         await Promise.all(_.map(tags, tag => tagModel.find(tag.id, 'idu', options)));
       }
-      articleSuccessResponse(ctx, HTTPStatus.CREATED, 1000);
+      articleSuccessResponse(ctx, 1000, HTTPStatus.CREATED);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1001, error);
+      articleErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -205,9 +205,9 @@ module.exports = (api) => {
         createdAt: article.createdAt,
         coverImages: article.coverImages,
       }));
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1001, formatArticles);
-    } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1002, error);
+      articleSuccessResponse(ctx, 1001, HTTPStatus.OK, formatArticles);
+    } catch (error) { /* istanbul ignore next */
+      articleErrorResponse(ctx, 1002, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -262,9 +262,8 @@ module.exports = (api) => {
     const { articleId } = ctx.params;
     try {
       const article = await articleModel.find(articleId, 'id');
-      /* istanbul ignore if */
       if (_.isNil(article)) {
-        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        articleErrorResponse(ctx, 1003);
         return;
       }
 
@@ -277,9 +276,9 @@ module.exports = (api) => {
         createdAt: article.createdAt,
         updatedAt: article.updatedAt,
       };
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1002, formatArticle);
+      articleSuccessResponse(ctx, 1002, HTTPStatus.OK, formatArticle);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1004, error);
+      articleErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -344,31 +343,30 @@ module.exports = (api) => {
     const { articleId } = ctx.params;
     const { url, ...options } = ctx.request.body;
     if (_.isEmpty(url) && _.isEmpty(options)) {
-      articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1005);
+      articleErrorResponse(ctx, 1005);
       return;
     }
 
     try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        articleErrorResponse(ctx, 1003);
+        return;
+      }
+
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
         if (existArticle) {
-          articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1000);
+          articleErrorResponse(ctx, 1000);
           return;
         }
         options.url = url;
       }
 
-      const article = await articleModel.find(articleId, 'id');
-      /* istanbul ignore if */
-      if (_.isNil(article)) {
-        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
-        return;
-      }
-
       await articleModel.find(articleId, 'idu', options);
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1003);
+      articleSuccessResponse(ctx, 1003);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1006, error);
+      articleErrorResponse(ctx, 1006, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -438,9 +436,8 @@ module.exports = (api) => {
         });
       }
       const article = await articleModel.find(articleId, 'id');
-      /* istanbul ignore if */
       if (_.isNil(article)) {
-        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        articleErrorResponse(ctx, 1003);
         return;
       }
 
@@ -479,12 +476,12 @@ module.exports = (api) => {
         if (_.isNil(value)) results.pop(value);
       });
       if (_.isNil(results[0])) {
-        articleSuccessResponse(ctx, HTTPStatus.OK, 1004);
+        articleSuccessResponse(ctx, 1004);
       } else {
-        articleSuccessResponse(ctx, HTTPStatus.OK, 1004, results);
+        articleSuccessResponse(ctx, 1004, HTTPStatus.OK, results);
       }
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1007, error);
+      articleErrorResponse(ctx, 1007, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -541,7 +538,7 @@ module.exports = (api) => {
 
     try {
       const results = await Promise.all(_.map(params, (publish, articleId) => {
-        return new Promise(async (resolve) => {
+        const promise = new Promise(async (resolve) => {
           try {
             await articleModel.find(articleId, 'id');
             const options = {};
@@ -556,18 +553,19 @@ module.exports = (api) => {
             resolve(`Server Error: article ${articleId} is not existed`);
           }
         });
+        return promise;
       }));
 
       results.forEach((value) => {
         if (_.isNil(value)) results.pop(value);
       });
       if (_.isNil(results[0])) {
-        articleSuccessResponse(ctx, HTTPStatus.OK, 1005);
+        articleSuccessResponse(ctx, 1005);
       } else {
-        articleSuccessResponse(ctx, HTTPStatus.OK, 1005, results);
+        articleSuccessResponse(ctx, 1005, HTTPStatus.OK, results);
       }
-    } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1008, error);
+    } catch (error) { /* istanbul ignore next */
+      articleErrorResponse(ctx, 1008, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -624,14 +622,14 @@ module.exports = (api) => {
     try {
       const article = await articleModel.find(articleId, 'id');
       if (_.isNil(article)) {
-        articleErrorResponse(ctx, HTTPStatus.BAD_REQUEST, 1003);
+        articleErrorResponse(ctx, 1003);
         return;
       }
 
       await articleModel.find(articleId, 'idu', { deletedAt: new Date() });
-      articleSuccessResponse(ctx, HTTPStatus.OK, 1006);
+      articleSuccessResponse(ctx, 1006, HTTPStatus.OK);
     } catch (error) {
-      articleErrorResponse(ctx, HTTPStatus.INTERNAL_SERVER_ERROR, 1009);
+      articleErrorResponse(ctx, 1009, HTTPStatus.INTERNAL_SERVER_ERROR);
     }
   });
 };

@@ -192,6 +192,7 @@ describe('[Route] tag', () => {
 
   describe('Get single tag', () => {
     let TEST_TAG;
+    let TEST_DELETE_TAG;
     let TEST_ARTICLES = [];
 
     beforeEach(async () => {
@@ -205,16 +206,31 @@ describe('[Route] tag', () => {
       });
       TEST_ARTICLES.push(article1);
       const article2 = await Article.create({
-        title: `jest-test-title-${now}`,
-        content: `jest-test-content-${now}`,
-        url: `jest-test-url-${now}`,
-        begins: `jest-test-begins-${now}`,
+        title: `jest-test-title-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+        url: `jest-test-url-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
       });
       TEST_ARTICLES.unshift(article2);
       TEST_TAG = await Tag.create({ name: `jest-test-${now}`, articles: [article1.id, article2.id] });
+      TEST_DELETE_TAG = await Tag.create({
+        deletedAt: new Date(),
+        name: `jest-test-${now + 1}`,
+      });
     });
 
     afterAll(() => Article.remove({}));
+
+    test('Error: get single tag with deleted tag id', async () => {
+      const response = await request(app.callback()).get(`/tags/${TEST_DELETE_TAG.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1003']);
+      expect(body).toHaveProperty('extra', '');
+    });
 
     test('Error: get single tag with not existed tag id', async () => {
       const response = await request(app.callback()).get('/tags/test');
@@ -319,9 +335,14 @@ describe('[Route] tag', () => {
 
   describe('Update tag name', () => {
     let TEST_TAG;
+    let TEST_DELETE_TAG;
 
     beforeEach(async () => {
       TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+      TEST_DELETE_TAG = await Tag.create({
+        deletedAt: new Date(),
+        name: `jest-test-${moment().valueOf() + 1}`,
+      });
     });
 
     test('Error: update tag\'s name with invalid parameters', async () => {
@@ -333,6 +354,18 @@ describe('[Route] tag', () => {
       expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
       expect(body).toHaveProperty('level', errorLevel['tagApi-1005']);
       expect(body).toHaveProperty('message', langUS['error-tagApi-1005']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: update tag\'s name with deleted tag id', async () => {
+      const response = await request(app.callback())
+        .patch(`/tags/${TEST_DELETE_TAG.id}`).send({ name: 'test' });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1003']);
       expect(body).toHaveProperty('extra', '');
     });
 
@@ -365,10 +398,27 @@ describe('[Route] tag', () => {
 
   describe('Delete tag', () => {
     let TEST_TAG;
+    let TEST_DELETE_TAG;
 
     beforeEach(async () => {
       TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+      TEST_DELETE_TAG = await Tag.create({
+        deletedAt: new Date(),
+        name: `jest-test-${moment().valueOf() + 1}`,
+      });
     });
+
+    test('Error: update tag\'s name with not existed tag', async () => {
+      const response = await request(app.callback()).del(`/tags/${TEST_DELETE_TAG.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['tagApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-tagApi-1003']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
 
     test('Error: update tag\'s name with not existed tag', async () => {
       const response = await request(app.callback()).del('/tags/test');

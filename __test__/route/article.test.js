@@ -197,6 +197,7 @@ describe('[Route] article', () => {
 
   describe('Get single article', () => {
     let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
       const now = moment().valueOf();
@@ -206,6 +207,24 @@ describe('[Route] article', () => {
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
       });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+      });
+    });
+
+    test('Error: get single article with deleted article id', async () => {
+      const response = await request(app.callback()).get(`/articles/${TEST_DELETE_ARTICLE.id}`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
+      expect(body).toHaveProperty('extra', '');
     });
 
     test('Error: get single article with not existed article id', async () => {
@@ -239,6 +258,7 @@ describe('[Route] article', () => {
 
   describe('Update article', () => {
     let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
       const now = moment().valueOf();
@@ -247,6 +267,13 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+      });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
       });
     });
 
@@ -258,6 +285,18 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1005']);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1005']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: update article with deleted article id', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_DELETE_ARTICLE.id}`).send({ title: `jest-test-${moment().valueOf()}` });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
       expect(body).toHaveProperty('extra', '');
     });
 
@@ -294,9 +333,30 @@ describe('[Route] article', () => {
     });
 
     test('Success: update article', async () => {
-      const articleUrl = `jest-test-url-${moment().valueOf()}`;
+      const articleTitle = `jest-test-update-title-${moment().valueOf()}`;
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}`).send({ url: articleUrl });
+        .put(`/articles/${TEST_ARTICLE.id}`).send({
+          title: articleTitle,
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-articleApi-1003']);
+      expect(body).not.toHaveProperty('data');
+
+      const article = await Article.findById(TEST_ARTICLE.id);
+      const articleJson = article.toJSON();
+      expect(articleJson).toHaveProperty('title', articleTitle);
+      expect(articleJson.createdAt).not.toBe(articleJson.updatedAt);
+    });
+
+    test('Success: update article with url', async () => {
+      const articleUrl = `jest-test-update-url-${moment().valueOf()}`;
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_ARTICLE.id}`).send({
+          url: articleUrl,
+        });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -315,6 +375,7 @@ describe('[Route] article', () => {
     let TEST_PUSH_TAG;
     let TEST_PULL_TAG;
     let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
       const now = moment().valueOf();
@@ -330,6 +391,13 @@ describe('[Route] article', () => {
         articles: [TEST_ARTICLE.id],
       });
       TEST_PULL_TAG = await Tag.create({ name: `jest-test-pull-${now}` });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+      });
     });
 
     afterEach(() => Tag.remove({}));
@@ -343,6 +411,18 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1007']);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1007']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: update article\'s tags with deleted article id', async () => {
+      const response = await request(app.callback())
+        .put(`/articles/${TEST_DELETE_ARTICLE.id}/tags`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
       expect(body).toHaveProperty('extra', '');
     });
 

@@ -1,7 +1,10 @@
 module.exports = {
   bail: true, // Stop test when first test fail
   collectCoverage: true,
-  collectCoverageFrom: ['**/*.{js}'],
+  collectCoverageFrom: [
+    '**/*.{js}',
+    '!<rootDir>/jest.config.js',
+  ],
   coverageDirectory: '<rootDir>/public/coverage',
   coveragePathIgnorePatterns: [
     '<rootDir>/views/',

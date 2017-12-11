@@ -15,13 +15,13 @@ module.exports = {
     const path = `${type}${_.upperFirst(file)}`;
     const translate = `success-${path}-${code}`;
     let message;
+    /* istanbul ignore else */
     if (process.env.NODE_ENV === 'test') {
       message = lanUS[translate];
     } else {
       message = ctx.i18n.__(translate) || 'Translate message not found';
     }
     ctx.status = status;
-    console.log('data =', data);
     ctx.response.body = { status, message, data };
   },
 
@@ -43,6 +43,7 @@ module.exports = {
       const translate = `error-${path}-${tcode}`;
       const level = errorLevel[`${path}-${tcode}`] || 'warning';
       let message;
+      /* istanbul ignore else */
       if (process.env.NODE_ENV === 'test') {
         message = lanUS[translate];
       } else {

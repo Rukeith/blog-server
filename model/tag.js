@@ -29,7 +29,7 @@ module.exports = class TagModel {
         promise = Tag.findOne(queries).exists('deletedAt', false);
         break;
       case 'idu':
-        promise = Tag.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
+        promise = Tag.findByIdAndUpdate(queries, options, { new: true, runValidators: true }).exists('deletedAt', false);
         break;
       case 'id':
         promise = Tag.findById(queries, null, options).exists('deletedAt', false);

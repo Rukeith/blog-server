@@ -89,7 +89,6 @@ module.exports = {
       }
       await next();
     } catch (error) {
-      /* istanbul ignore next */
       const err = (error.code === 'INVALID_PARAM') ? JSON.stringify(error.errors) : error;
       errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'data', 'middleware', 1001, err]);
     }

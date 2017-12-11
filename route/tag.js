@@ -273,7 +273,6 @@ module.exports = (api) => {
 
     try {
       const tag = await tagModel.find(tagId, 'id', {}, populate);
-      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
         tagErrorResponse(ctx, 1003);
         return;
@@ -359,7 +358,6 @@ module.exports = (api) => {
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { name });
-      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
         tagErrorResponse(ctx, 1003);
         return;
@@ -422,7 +420,6 @@ module.exports = (api) => {
 
     try {
       const tag = await tagModel.find(tagId, 'idu', { deletedAt: new Date() });
-      /* istanbul ignore if */
       if (_.isEmpty(tag)) {
         tagErrorResponse(ctx, 1003);
         return;

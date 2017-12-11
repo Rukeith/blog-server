@@ -19,6 +19,7 @@ const enforceHttps = require('koa-sslify');
 
 const app = new Koa();
 
+/* istanbul ignore if */
 if (process.env.SENTRY_DSN) {
   Raven.config(process.env.SENTRY_DSN, {
     sampleRate: 1,
@@ -32,6 +33,7 @@ if (process.env.SENTRY_DSN) {
 
 locale(app);
 
+/* istanbul ignore if */
 if (process.env.NODE_ENV === 'production') {
   // Automatically redirects to an HTTPS address
   app.use(enforceHttps({ trustProtoHeader: true, trustAzureHeader: true }));
@@ -80,6 +82,7 @@ article(router);
 
 app.on('error', (err, ctx) => {
   try {
+    /* istanbul ignore if */
     if (process.env.SENTRY_DSN) {
       Raven.captureException(err, ctx.sentryError, (sentryerr, eventId) => {
         console.info(`Reported sentry error : ${eventId}`);
@@ -96,6 +99,7 @@ app.on('error', (err, ctx) => {
     // Default not print error message
     let error = {};
     // If env is development then print error messages for debug
+    /* istanbul ignore else */
     if (app.env !== 'production' && _.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'extra')) {
       error = ctx.sentryError.extra;
     }
@@ -105,7 +109,7 @@ app.on('error', (err, ctx) => {
       level: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'level')) ? ctx.sentryError.level : 'error',
       message: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'message')) ? ctx.sentryError.message : 'unexpected error',
     };
-  } catch (error) {
+  } catch (error) { /* istanbul ignore next */
     console.error('Error handle fail :', error);
   }
 });
@@ -118,11 +122,15 @@ portfinder.getPortPromise().then((port) => {
     console.info('===========================================');
 
     // Caught global exception error handle
+    /* istanbul ignore next */
     process.on('uncaughtException', err => console.error('Caught exception: ', err.stack));
+    /* istanbul ignore next */
     process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
   });
-}).catch((error) => {
+/* istanbul ignore next */
+}).catch((error) => { /* istanbul ignore next */
   console.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
+  /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'test') {
     process.exit(1);
   }
