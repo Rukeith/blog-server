@@ -1,15 +1,18 @@
 image: node:latest
 
-services:
-  - mongo:latest
-
 cache:
   paths:
   - views/
   - public/
   - node_modules/
 
+services:
+  - mongo:latest
+
+before_script:
+  - npm install
+
 test_db:
   script:
-   - npm install
+   - npm run lint
    - npm test
