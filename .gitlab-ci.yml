@@ -15,9 +15,6 @@ variables:
 before_script:
   - npm install
   - apt-get update -yq
-  - apt-get install -y ruby-dev
-  - apt-get install rubygems -y
-  - gem install dpl
 
 stages:
    - lint
@@ -35,15 +32,19 @@ test:
   stage: test
 
 staging:
+  image: ruby:latest
   stage: deploy
   script:
-  - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY
+    - gem install dpl
+    - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY
   only:
-  - master
+    - master
 
 production:
+  image: ruby:latest
   stage: deploy
   script:
-  - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY
+    - gem install dpl
+    - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY
   only:
-  - tags
+    - tags
