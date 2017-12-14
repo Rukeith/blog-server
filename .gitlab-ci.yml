@@ -14,6 +14,7 @@ variables:
 
 before_script:
   - npm install
+  - gem install dpl
 
 stages:
    - lint
@@ -28,3 +29,17 @@ test:
   script:
    - npm test
   stage: test
+
+staging:
+  stage: deploy
+  script:
+  - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY
+  only:
+  - master
+
+production:
+  stage: deploy
+  script:
+  - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY
+  only:
+  - tags
