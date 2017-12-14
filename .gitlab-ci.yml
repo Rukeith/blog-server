@@ -14,6 +14,8 @@ variables:
 
 before_script:
   - npm install
+  - apt-get update -yq
+  - apt-get install -y ruby-dev
   - gem install dpl
 
 stages:
