@@ -16,7 +16,7 @@ before_script:
   - npm install
   - apt-get update -yq
   - apt-get install -y ruby-dev
-  - ruby -v
+  - apt-get install rubygems
   - gem install dpl
 
 stages:
