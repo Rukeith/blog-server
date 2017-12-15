@@ -8,10 +8,8 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 const tagModel = new TagModel();
 const articleModel = new ArticleModel();
 
-const articleSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) =>
-  successResponse(ctx, [status, 'article', 'api', code, data]);
-const articleErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) =>
-  errorResponse(ctx, [status, 'article', 'api', code, error]);
+const articleSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'article', 'api', code, data]);
+const articleErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'article', 'api', code, error]);
 
 module.exports = (api) => {
   /**
