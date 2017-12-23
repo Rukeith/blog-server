@@ -135,7 +135,6 @@ describe('[Model] session', () => {
         expect(sessionJSON).toHaveProperty('_id');
         expect(sessionJSON).toHaveProperty('token', options.token);
         expect(sessionJSON).toHaveProperty('expiredAt');
-  
         expect(sessionJSON).toHaveProperty('createdAt');
         expect(sessionJSON).toHaveProperty('updatedAt');
       });

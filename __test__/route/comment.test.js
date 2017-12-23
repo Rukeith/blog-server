@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 const { DateTime } = require('luxon');
