@@ -1,6 +1,8 @@
 {
   "dataMiddleware-1000": "error",
 	"dataMiddleware-1001": "error",
+	"indexApi-1000": "error",
+	"indexApi-1001": "error",
 	"articleApi-1000": "error",
 	"articleApi-1001": "error",
 	"articleApi-1002": "error",

@@ -1,19 +1,31 @@
 const _ = require('lodash');
-const moment = require('moment');
+const jwt = require('jsonwebtoken');
 const request = require('supertest');
+const { DateTime } = require('luxon');
 const HTTPStatus = require('http-status');
 const app = require('../../index.js');
-const { Article, Tag } = require('../../model/schema');
+const { Article, Session, Tag } = require('../../model/schema');
 const langUS = require('../../locales/us.json');
 const errorLevel = require('../../config/error.json');
 
 describe('[Route] tag', () => {
-  afterEach(() => Tag.remove({}));
+  let token;
+  beforeEach(() => {
+    token = jwt.sign({ ip: '127.0.0.1' }, Buffer.from(process.env.JWT_SECRET), { expiresIn: '5m', issuer: 'rukeith' });
+    return Session.create({
+      token,
+      expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
+    });
+  });
+  afterEach(() => Promise.all([Tag.remove({}), Session.remove({})]));
 
   describe('Create tag', () => {
     test('Error: name is empty', async () => {
       const response = await request(app.callback())
-        .post('/tags').send({ names: [' '] });
+        .post('/tags')
+        .set('Rukeith-Token', token)
+        .send({ names: [' '] });
+
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
       expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
@@ -23,10 +35,12 @@ describe('[Route] tag', () => {
     });
 
     test('Success: names are duplicate', async () => {
-      const name = `jest-test-${moment().valueOf()}`;
+      const name = `jest-test-${DateTime.local().valueOf()}`;
       const names = [name, name];
       const response = await request(app.callback())
-        .post('/tags').send({ names });
+        .post('/tags')
+        .set('Rukeith-Token', token)
+        .send({ names });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.CREATED);
@@ -53,11 +67,13 @@ describe('[Route] tag', () => {
     });
 
     test('Success: create tag with existed name', async () => {
-      const name = `jest-test-${moment().valueOf()}`;
+      const name = `jest-test-${DateTime.local().valueOf()}`;
       const existdTag = await Tag.create({ name });
 
       const response = await request(app.callback())
-        .post('/tags').send({ names: [name] });
+        .post('/tags')
+        .set('Rukeith-Token', token)
+        .send({ names: [name] });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.CREATED);
@@ -90,7 +106,7 @@ describe('[Route] tag', () => {
 
     beforeEach(async () => {
       TEST_TAGS = [];
-      const timestamp = moment().valueOf();
+      const timestamp = DateTime.local().valueOf();
       const tagName1 = `jest-test-${timestamp}`;
       const tagName2 = `jest-test-${timestamp + 1}`;
       const tag1 = await Tag.create({ name: tagName1 });
@@ -103,9 +119,10 @@ describe('[Route] tag', () => {
 
     test('Success: query tags with invalid query parameters', async () => {
       const response = await request(app.callback())
-        .get('/tags').query({ limit: -1, offset: -1, direct: 'test' });
-      const { body, status } = response;
+        .get('/tags')
+        .query({ limit: -1, offset: -1, direct: 'test' });
 
+      const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1001']);
@@ -118,9 +135,10 @@ describe('[Route] tag', () => {
 
     test('Success: query tags with limit and offset', async () => {
       const response = await request(app.callback())
-        .get('/tags').query({ limit: 1, offset: 1 });
-      const { body, status } = response;
+        .get('/tags')
+        .query({ limit: 1, offset: 1 });
 
+      const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1001']);
@@ -135,9 +153,10 @@ describe('[Route] tag', () => {
 
     test('Success: query tags with sortby and direct', async () => {
       const response = await request(app.callback())
-        .get('/tags').query({ sortby: 'createdAt', direct: 'asc' });
-      const { body, status } = response;
+        .get('/tags')
+        .query({ sortby: 'createdAt', direct: 'asc' });
 
+      const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-tagApi-1001']);
@@ -152,17 +171,18 @@ describe('[Route] tag', () => {
 
     test('Success: query tags with article', async () => {
       const article = await Article.create({
-        title: `jest-test-title-${moment().valueOf()}`,
-        begins: `jest-test-begins-${moment().valueOf()}`,
-        content: `jest-test-content-${moment().valueOf()}`,
-        url: `jest-test-url-${moment().valueOf()}`,
+        title: `jest-test-title-${DateTime.local().valueOf()}`,
+        begins: `jest-test-begins-${DateTime.local().valueOf()}`,
+        content: `jest-test-content-${DateTime.local().valueOf()}`,
+        url: `jest-test-url-${DateTime.local().valueOf()}`,
       });
       TEST_TAGS[0].articles.addToSet(article.id);
       await TEST_TAGS[0].save();
       TEST_TAGS[1].articles.addToSet(article.id);
       await TEST_TAGS[1].save();
       const response = await request(app.callback())
-        .get('/tags').query({ direct: 'asc' });
+        .get('/tags')
+        .query({ direct: 'asc' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -197,7 +217,7 @@ describe('[Route] tag', () => {
 
     beforeEach(async () => {
       TEST_ARTICLES = [];
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       const article1 = await Article.create({
         title: `jest-test-title-${now}`,
         content: `jest-test-content-${now}`,
@@ -222,7 +242,8 @@ describe('[Route] tag', () => {
     afterAll(() => Article.remove({}));
 
     test('Error: get single tag with deleted tag id', async () => {
-      const response = await request(app.callback()).get(`/tags/${TEST_DELETE_TAG.id}`);
+      const response = await request(app.callback())
+        .get(`/tags/${TEST_DELETE_TAG.id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -233,7 +254,8 @@ describe('[Route] tag', () => {
     });
 
     test('Error: get single tag with not existed tag id', async () => {
-      const response = await request(app.callback()).get('/tags/test');
+      const response = await request(app.callback())
+        .get('/tags/test');
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -244,7 +266,8 @@ describe('[Route] tag', () => {
     });
 
     test('Success: get single tag', async () => {
-      const response = await request(app.callback()).get(`/tags/${TEST_TAG.id}`);
+      const response = await request(app.callback())
+        .get(`/tags/${TEST_TAG.id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -271,7 +294,8 @@ describe('[Route] tag', () => {
 
     test('Success: get single tag with parameters', async () => {
       const response = await request(app.callback())
-        .get(`/tags/${TEST_TAG.id}`).query({
+        .get(`/tags/${TEST_TAG.id}`)
+        .query({
           limit: 1,
           offset: 1,
           direct: 'asc',
@@ -303,7 +327,8 @@ describe('[Route] tag', () => {
 
     test('Success: get single tag with invalid parameters', async () => {
       const response = await request(app.callback())
-        .get(`/tags/${TEST_TAG.id}`).query({
+        .get(`/tags/${TEST_TAG.id}`)
+        .query({
           limit: -1,
           offset: -1,
           direct: 'ascx',
@@ -338,16 +363,18 @@ describe('[Route] tag', () => {
     let TEST_DELETE_TAG;
 
     beforeEach(async () => {
-      TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+      TEST_TAG = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
       TEST_DELETE_TAG = await Tag.create({
         deletedAt: new Date(),
-        name: `jest-test-${moment().valueOf() + 1}`,
+        name: `jest-test-${DateTime.local().valueOf() + 1}`,
       });
     });
 
     test('Error: update tag\'s name with invalid parameters', async () => {
       const response = await request(app.callback())
-        .patch('/tags/test').send({ name: ' ' });
+        .patch('/tags/test')
+        .set('Rukeith-Token', token)
+        .send({ name: ' ' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -359,7 +386,9 @@ describe('[Route] tag', () => {
 
     test('Error: update tag\'s name with deleted tag id', async () => {
       const response = await request(app.callback())
-        .patch(`/tags/${TEST_DELETE_TAG.id}`).send({ name: 'test' });
+        .patch(`/tags/${TEST_DELETE_TAG.id}`)
+        .set('Rukeith-Token', token)
+        .send({ name: 'test' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -371,7 +400,9 @@ describe('[Route] tag', () => {
 
     test('Error: update tag\'s name with not existed tag', async () => {
       const response = await request(app.callback())
-        .patch('/tags/test').send({ name: TEST_TAG.name });
+        .patch('/tags/test')
+        .set('Rukeith-Token', token)
+        .send({ name: TEST_TAG.name });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -382,9 +413,11 @@ describe('[Route] tag', () => {
     });
 
     test('Success: update tag\'s name', async () => {
-      const newTagName = `jest-test-new-tag-name-${moment().valueOf()}`;
+      const newTagName = `jest-test-new-tag-name-${DateTime.local().valueOf()}`;
       const response = await request(app.callback())
-        .patch(`/tags/${TEST_TAG.id}`).send({ name: newTagName });
+        .patch(`/tags/${TEST_TAG.id}`)
+        .set('Rukeith-Token', token)
+        .send({ name: newTagName });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -401,15 +434,17 @@ describe('[Route] tag', () => {
     let TEST_DELETE_TAG;
 
     beforeEach(async () => {
-      TEST_TAG = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
+      TEST_TAG = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
       TEST_DELETE_TAG = await Tag.create({
         deletedAt: new Date(),
-        name: `jest-test-${moment().valueOf() + 1}`,
+        name: `jest-test-${DateTime.local().valueOf() + 1}`,
       });
     });
 
     test('Error: update tag\'s name with not existed tag', async () => {
-      const response = await request(app.callback()).del(`/tags/${TEST_DELETE_TAG.id}`);
+      const response = await request(app.callback())
+        .del(`/tags/${TEST_DELETE_TAG.id}`)
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -421,7 +456,9 @@ describe('[Route] tag', () => {
 
 
     test('Error: update tag\'s name with not existed tag', async () => {
-      const response = await request(app.callback()).del('/tags/test');
+      const response = await request(app.callback())
+        .del('/tags/test')
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -432,7 +469,9 @@ describe('[Route] tag', () => {
     });
 
     test('Success: delete tag', async () => {
-      const response = await request(app.callback()).del(`/tags/${TEST_TAG.id}`);
+      const response = await request(app.callback())
+        .del(`/tags/${TEST_TAG.id}`)
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);

@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const TagModel = require('../model/tag.js');
+const { verifyToken } = require('../middleware/auth.js');
 const { validateParameters } = require('../middleware/data.js');
 const { successResponse, errorResponse } = require('../controller/parse.js');
 
@@ -61,7 +62,7 @@ module.exports = (api) => {
    *      "message": "Create tags processing failed"
    *    }
    */
-  api.post('/tags', validateParameters('post/tags'), async (ctx) => {
+  api.post('/tags', verifyToken, validateParameters('post/tags'), async (ctx) => {
     let { names } = ctx.request.body;
     names = _.dropWhile([...new Set(_.map(names, _.trim))], _.isEmpty);
     if (_.isEmpty(names)) {
@@ -345,7 +346,7 @@ module.exports = (api) => {
    *      "message": "Update tag's name processing failed"
    *    }
    */
-  api.patch('/tags/:tagId', validateParameters('patch/tags/:tagId'), async (ctx) => {
+  api.patch('/tags/:tagId', verifyToken, validateParameters('patch/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
     let { name } = ctx.request.body;
     name = _.trim(name);
@@ -413,7 +414,7 @@ module.exports = (api) => {
    *      "message": "Delete tag processing failed"
    *    }
    */
-  api.delete('/tags/:tagId', validateParameters('delete/tags/:tagId'), async (ctx) => {
+  api.delete('/tags/:tagId', verifyToken, validateParameters('delete/tags/:tagId'), async (ctx) => {
     const { tagId } = ctx.params;
 
     try {

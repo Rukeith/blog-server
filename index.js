@@ -114,7 +114,7 @@ app.on('error', (err, ctx) => {
   }
 });
 
-portfinder.basePort = process.env.PORT ? process.env.PORT : 3000;
+portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
 portfinder.getPortPromise().then((port) => {
   app.listen(port, () => {
     console.info('===========================================');

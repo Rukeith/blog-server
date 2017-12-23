@@ -1,6 +1,10 @@
 # blog-server
 This repository which is a nodejs api server is made for my personal blog.
 
+[![coverage report](https://gitlab.com/Rukeith/blog-server/badges/master/coverage.svg)](https://gitlab.com/Rukeith/blog-server/commits/master)
+
+[![pipeline status](https://gitlab.com/Rukeith/blog-server/badges/master/pipeline.svg)](https://gitlab.com/Rukeith/blog-server/commits/master)
+
 ## Required
 * Node >= 9.2.0
 * MongoDB (I use mLab to be my MongoDB)

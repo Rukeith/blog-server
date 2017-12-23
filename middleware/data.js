@@ -10,6 +10,13 @@ module.exports = {
   validateParameters: path => async (ctx, next) => {
     try {
       switch (path) {
+        // Auth
+        case 'post/login':
+          ctx.verifyParams({
+            username: { type: 'string' },
+            password: { type: 'password', min: 8 },
+          });
+          break;
         // Article
         case 'post/articles':
           ctx.verifyParams({

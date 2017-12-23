@@ -1,21 +1,30 @@
 const _ = require('lodash');
-const moment = require('moment');
+const jwt = require('jsonwebtoken');
 const request = require('supertest');
+const { DateTime } = require('luxon');
 const HTTPStatus = require('http-status');
 const app = require('../../index.js');
-const { Article, Tag } = require('../../model/schema');
 const langUS = require('../../locales/us.json');
 const errorLevel = require('../../config/error.json');
+const { Article, Session, Tag } = require('../../model/schema');
 
 describe('[Route] article', () => {
-  afterEach(() => Article.remove({}));
+  let token;
+  beforeEach(() => {
+    token = jwt.sign({ ip: '127.0.0.1' }, Buffer.from(process.env.JWT_SECRET), { expiresIn: '5m', issuer: 'rukeith' });
+    return Session.create({
+      token,
+      expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
+    });
+  });
+  afterEach(() => Promise.all([Article.remove({}), Session.remove({})]));
 
   describe('Create article', () => {
     afterEach(() => Tag.remove({}));
 
     test('Error: article\'s url have been used', async () => {
-      const now = moment().valueOf();
-      const articleUrl = `jest-test-url-${moment().valueOf()}`;
+      const now = DateTime.local().valueOf();
+      const articleUrl = `jest-test-url-${DateTime.local().valueOf()}`;
       await Article.create({
         url: articleUrl,
         title: `jest-test-title-${now}`,
@@ -23,9 +32,11 @@ describe('[Route] article', () => {
         content: `jest-test-content-${now}`,
       });
 
-      const newTime = moment().valueOf();
+      const newTime = DateTime.local().valueOf();
       const response = await request(app.callback())
-        .post('/articles').send({
+        .post('/articles')
+        .set('Rukeith-Token', token)
+        .send({
           url: articleUrl,
           title: `jest-test-title-${newTime}`,
           begins: `jest-test-begins-${newTime}`,
@@ -41,9 +52,11 @@ describe('[Route] article', () => {
     });
 
     test('Error: article with unexisted tag', async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       const response = await request(app.callback())
-        .post('/articles').send({
+        .post('/articles')
+        .set('Rukeith-Token', token)
+        .send({
           title: `jest-test-title-${now}`,
           begins: `jest-test-begins-${now}`,
           content: `jest-test-content-${now}`,
@@ -60,10 +73,12 @@ describe('[Route] article', () => {
     });
 
     test('Success: create article with url is default, tag and coverImages have duplicate values', async () => {
-      let tag = await Tag.create({ name: `jest-test-${moment().valueOf()}` });
-      const now = moment().valueOf();
+      let tag = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
+      const now = DateTime.local().valueOf();
       const response = await request(app.callback())
-        .post('/articles').send({
+        .post('/articles')
+        .set('Rukeith-Token', token)
+        .send({
           title: `jest-test-title-${now}`,
           begins: `jest-test-begins-${now}`,
           content: `jest-test-content-${now}`,
@@ -87,9 +102,11 @@ describe('[Route] article', () => {
     });
 
     test('Success: create article with url and without tags', async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       const response = await request(app.callback())
-        .post('/articles').send({
+        .post('/articles')
+        .set('Rukeith-Token', token)
+        .send({
           url: `jest-test-url-${now}`,
           title: `jest-test-title-${now}`,
           begins: `jest-test-begins-${now}`,
@@ -116,7 +133,7 @@ describe('[Route] article', () => {
 
     beforeEach(async () => {
       TEST_ARTICLES = [];
-      const timestamp = moment().valueOf();
+      const timestamp = DateTime.local().valueOf();
       const article1 = await Article.create({
         url: `jest-test-url-${timestamp}`,
         title: `jest-test-title-${timestamp}`,
@@ -135,7 +152,8 @@ describe('[Route] article', () => {
 
     test('Success: query tags with invalid query parameters', async () => {
       const response = await request(app.callback())
-        .get('/articles').query({ limit: -1, offset: -1, direct: 'test' });
+        .get('/articles')
+        .query({ limit: -1, offset: -1, direct: 'test' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -155,7 +173,8 @@ describe('[Route] article', () => {
 
     test('Success: query tags with limit and offset', async () => {
       const response = await request(app.callback())
-        .get('/articles').query({ limit: 1, offset: 1 });
+        .get('/articles')
+        .query({ limit: 1, offset: 1 });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -175,7 +194,8 @@ describe('[Route] article', () => {
 
     test('Success: query tags with sortby and direct', async () => {
       const response = await request(app.callback())
-        .get('/articles').query({ sortby: 'createdAt', direct: 'asc' });
+        .get('/articles')
+        .query({ sortby: 'createdAt', direct: 'asc' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -200,7 +220,7 @@ describe('[Route] article', () => {
     let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       TEST_ARTICLE = await Article.create({
         url: `jest-test-url-${now}`,
         title: `jest-test-title-${now}`,
@@ -217,7 +237,8 @@ describe('[Route] article', () => {
     });
 
     test('Error: get single article with deleted article id', async () => {
-      const response = await request(app.callback()).get(`/articles/${TEST_DELETE_ARTICLE.id}`);
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_DELETE_ARTICLE.id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -228,7 +249,8 @@ describe('[Route] article', () => {
     });
 
     test('Error: get single article with not existed article id', async () => {
-      const response = await request(app.callback()).get('/articles/test');
+      const response = await request(app.callback())
+        .get('/articles/test');
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -239,7 +261,8 @@ describe('[Route] article', () => {
     });
 
     test('Success: get single article', async () => {
-      const response = await request(app.callback()).get(`/articles/${TEST_ARTICLE.id}`);
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_ARTICLE.id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -261,7 +284,7 @@ describe('[Route] article', () => {
     let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       TEST_ARTICLE = await Article.create({
         url: `jest-test-url-${now}`,
         title: `jest-test-title-${now}`,
@@ -278,7 +301,9 @@ describe('[Route] article', () => {
     });
 
     test('Error: update article without parameters', async () => {
-      const response = await request(app.callback()).put('/articles/test');
+      const response = await request(app.callback())
+        .put('/articles/test')
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -290,7 +315,9 @@ describe('[Route] article', () => {
 
     test('Error: update article with deleted article id', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_DELETE_ARTICLE.id}`).send({ title: `jest-test-${moment().valueOf()}` });
+        .put(`/articles/${TEST_DELETE_ARTICLE.id}`)
+        .set('Rukeith-Token', token)
+        .send({ title: `jest-test-${DateTime.local().valueOf()}` });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -301,7 +328,7 @@ describe('[Route] article', () => {
     });
 
     test('Error: update article with another article\'s url', async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       const article = await Article.create({
         url: `jest-test-url-${now}`,
         title: `jest-test-title-${now}`,
@@ -310,7 +337,9 @@ describe('[Route] article', () => {
       });
 
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}`).send({ url: article.url });
+        .put(`/articles/${TEST_ARTICLE.id}`)
+        .set('Rukeith-Token', token)
+        .send({ url: article.url });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -322,7 +351,9 @@ describe('[Route] article', () => {
 
     test('Error: update article not existed id', async () => {
       const response = await request(app.callback())
-        .put('/articles/test').send({ title: `jest-test-title-${moment().valueOf()}` });
+        .put('/articles/test')
+        .set('Rukeith-Token', token)
+        .send({ title: `jest-test-title-${DateTime.local().valueOf()}` });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -333,11 +364,11 @@ describe('[Route] article', () => {
     });
 
     test('Success: update article', async () => {
-      const articleTitle = `jest-test-update-title-${moment().valueOf()}`;
+      const articleTitle = `jest-test-update-title-${DateTime.local().valueOf()}`;
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}`).send({
-          title: articleTitle,
-        });
+        .put(`/articles/${TEST_ARTICLE.id}`)
+        .set('Rukeith-Token', token)
+        .send({ title: articleTitle });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -352,11 +383,11 @@ describe('[Route] article', () => {
     });
 
     test('Success: update article with url', async () => {
-      const articleUrl = `jest-test-update-url-${moment().valueOf()}`;
+      const articleUrl = `jest-test-update-url-${DateTime.local().valueOf()}`;
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}`).send({
-          url: articleUrl,
-        });
+        .put(`/articles/${TEST_ARTICLE.id}`)
+        .set('Rukeith-Token', token)
+        .send({ url: articleUrl });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -378,7 +409,7 @@ describe('[Route] article', () => {
     let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       TEST_ARTICLE = await Article.create({
         url: `jest-test-url-${now}`,
         title: `jest-test-title-${now}`,
@@ -404,7 +435,8 @@ describe('[Route] article', () => {
 
     test('Error: update article\'s tags with unexisted id', async () => {
       const response = await request(app.callback())
-        .put('/articles/test/tags');
+        .put('/articles/test/tags')
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -416,7 +448,8 @@ describe('[Route] article', () => {
 
     test('Error: update article\'s tags with deleted article id', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_DELETE_ARTICLE.id}/tags`);
+        .put(`/articles/${TEST_DELETE_ARTICLE.id}/tags`)
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -428,7 +461,9 @@ describe('[Route] article', () => {
 
     test('Success: update article\'s tags push with invalid tags ', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({ push: ['test', TEST_PULL_TAG.id] });
+        .put(`/articles/${TEST_ARTICLE.id}/tags`)
+        .set('Rukeith-Token', token)
+        .send({ push: ['test', TEST_PULL_TAG.id] });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -443,7 +478,9 @@ describe('[Route] article', () => {
 
     test('Success: update article\'s tags pull with invalid tags ', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({ pull: ['test', TEST_PUSH_TAG.id] });
+        .put(`/articles/${TEST_ARTICLE.id}/tags`)
+        .set('Rukeith-Token', token)
+        .send({ pull: ['test', TEST_PUSH_TAG.id] });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -458,7 +495,9 @@ describe('[Route] article', () => {
 
     test('Success: update article\'s tags pull and push with same tags ', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({
+        .put(`/articles/${TEST_ARTICLE.id}/tags`)
+        .set('Rukeith-Token', token)
+        .send({
           push: [TEST_PUSH_TAG.id],
           pull: [TEST_PUSH_TAG.id],
         });
@@ -476,7 +515,9 @@ describe('[Route] article', () => {
 
     test('Success: update article\'s tags pull with invalid tags ', async () => {
       const response = await request(app.callback())
-        .put(`/articles/${TEST_ARTICLE.id}/tags`).send({
+        .put(`/articles/${TEST_ARTICLE.id}/tags`)
+        .set('Rukeith-Token', token)
+        .send({
           push: [TEST_PULL_TAG.id],
           pull: [TEST_PUSH_TAG.id],
         });
@@ -503,7 +544,7 @@ describe('[Route] article', () => {
     let TEST_UNPUBLISH_ARTICLE;
 
     beforeEach(async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       TEST_PUBLISH_ARTICLE = await Article.create({
         publishedAt: new Date(),
         url: `jest-test-url-${now}`,
@@ -522,7 +563,9 @@ describe('[Route] article', () => {
 
     test('Success: publish articles with invalid article id ', async () => {
       const response = await request(app.callback())
-        .put('/articles/publish/blog').send({ test: 'test' });
+        .put('/articles/publish/blog')
+        .set('Rukeith-Token', token)
+        .send({ test: 'test' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -536,7 +579,9 @@ describe('[Route] article', () => {
       params[TEST_PUBLISH_ARTICLE.id] = false;
       params[TEST_UNPUBLISH_ARTICLE.id] = true;
       const response = await request(app.callback())
-        .put('/articles/publish/blog').send(params);
+        .put('/articles/publish/blog')
+        .set('Rukeith-Token', token)
+        .send(params);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -560,7 +605,7 @@ describe('[Route] article', () => {
     let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
-      const now = moment().valueOf();
+      const now = DateTime.local().valueOf();
       TEST_ARTICLE = await Article.create({
         url: `jest-test-url-${now}`,
         title: `jest-test-title-${now}`,
@@ -577,7 +622,9 @@ describe('[Route] article', () => {
     });
 
     test('Error: delete article with not existed id', async () => {
-      const response = await request(app.callback()).del('/articles/test');
+      const response = await request(app.callback())
+        .del('/articles/test')
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
@@ -588,7 +635,9 @@ describe('[Route] article', () => {
     });
 
     test('Error: delete article with deleted article', async () => {
-      const response = await request(app.callback()).del(`/articles/${TEST_DELETE_ARTICLE.id}`);
+      const response = await request(app.callback())
+        .del(`/articles/${TEST_DELETE_ARTICLE.id}`)
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -599,7 +648,9 @@ describe('[Route] article', () => {
     });
 
     test('Success: delete article', async () => {
-      const response = await request(app.callback()).del(`/articles/${TEST_ARTICLE.id}`);
+      const response = await request(app.callback())
+        .del(`/articles/${TEST_ARTICLE.id}`)
+        .set('Rukeith-Token', token);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);

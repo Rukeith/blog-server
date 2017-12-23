@@ -1,8 +1,12 @@
 {
 	"error-tagModel-1000": "Tag's name which is used to create tag is invalid",
 	"error-tagModel-1001": "The parameters are used to query tags are invalid",
+	"error-authMiddleware-1000": "Token is not exist",
+	"error-authMiddleware-1001": "Token is expired",
+	"error-authMiddleware-1002": "Verify token process failed",
 	"error-dataMiddleware-1000": "The api route is not exist",
 	"error-dataMiddleware-1001": "The api's parameters are invalid",
+	"success-indexApi-1000": "Login success",
 	"error-articleApi-1000": "Article's url cannot duplicate",
 	"error-articleApi-1001": "Create article processing failed",
 	"error-articleApi-1002": "Get articles processing failed",

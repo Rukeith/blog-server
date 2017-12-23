@@ -2,6 +2,7 @@ const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const TagModel = require('../model/tag.js');
 const ArticleModel = require('../model/article.js');
+const { verifyToken } = require('../middleware/auth.js');
 const { validateParameters } = require('../middleware/data.js');
 const { successResponse, errorResponse } = require('../controller/parse.js');
 
@@ -73,7 +74,7 @@ module.exports = (api) => {
    *      "message": "Create article processing failed"
    *    }
    */
-  api.post('/articles', validateParameters('post/articles'), async (ctx) => {
+  api.post('/articles', verifyToken, validateParameters('post/articles'), async (ctx) => {
     let { tags = [], coverImages = [] } = ctx.request.body;
     const {
       url,
@@ -105,6 +106,7 @@ module.exports = (api) => {
       const article = await articleModel.create(params);
       if (!_.isEmpty(tags)) {
         tags = await Promise.all(_.map(tags, tagId => tagModel.find(tagId, 'id')));
+        tags = _.dropWhile(tags, _.isEmpty);
         const options = { $addToSet: { articles: article.id } };
         await Promise.all(_.map(tags, tag => tagModel.find(tag.id, 'idu', options)));
       }
@@ -337,7 +339,7 @@ module.exports = (api) => {
    *      "message": "Update article processing failed"
    *    }
    */
-  api.put('/articles/:articleId', validateParameters('put/articles/:articleId'), async (ctx) => {
+  api.put('/articles/:articleId', verifyToken, validateParameters('put/articles/:articleId'), async (ctx) => {
     const { articleId } = ctx.params;
     const { url, ...options } = ctx.request.body;
     if (_.isEmpty(url) && _.isEmpty(options)) {
@@ -421,7 +423,7 @@ module.exports = (api) => {
    *      "message": "Update article processing failed"
    *    }
    */
-  api.put('/articles/:articleId/tags', validateParameters('put/articles/:articleId/tags'), async (ctx) => {
+  api.put('/articles/:articleId/tags', verifyToken, validateParameters('put/articles/:articleId/tags'), async (ctx) => {
     const { articleId } = ctx.params;
     const { push = [], pull = [] } = ctx.request.body;
     const diff = _.intersectionWith(push, pull, _.isEqual);
@@ -530,7 +532,7 @@ module.exports = (api) => {
    *      "message": "Publish articles processing failed"
    *    }
    */
-  api.put('/articles/publish/blog', async (ctx) => {
+  api.put('/articles/publish/blog', verifyToken, async (ctx) => {
     const publishedAt = new Date();
     const params = ctx.request.body;
 
@@ -614,7 +616,7 @@ module.exports = (api) => {
    *      "message": "Delete article processing failed"
    *    }
    */
-  api.delete('/articles/:articleId', validateParameters('delete/articles/:articleId'), async (ctx) => {
+  api.delete('/articles/:articleId', verifyToken, validateParameters('delete/articles/:articleId'), async (ctx) => {
     const { articleId } = ctx.params;
 
     try {
