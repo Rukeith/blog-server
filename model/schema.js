@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const ArticleSchema = new Schema({
   title: {
-    index: true,
     required: true,
     type: Schema.Types.String,
   },
@@ -22,6 +21,44 @@ const ArticleSchema = new Schema({
   },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,
+  deletedAt: Schema.Types.Date,
+}, {
+  timestamps: true,
+});
+
+const CommentSchema = new Schema({
+  article_id: {
+    required: true,
+    ref: 'Article',
+    type: Schema.Types.ObjectId,
+  },
+  username: {
+    index: true,
+    required: true,
+    type: Schema.Types.String,
+  },
+  email: {
+    type: Schema.Types.String,
+  },
+  context: {
+    required: true,
+    type: Schema.Types.String,
+  },
+}, {
+  timestamps: true,
+});
+
+const SessionSchema = new Schema({
+  token: {
+    index: true,
+    required: true,
+    type: Schema.Types.String,
+  },
+  expiredAt: {
+    required: true,
+    default: Date.now,
+    type: Schema.Types.Date,
+  },
   deletedAt: Schema.Types.Date,
 }, {
   timestamps: true,
@@ -48,6 +85,8 @@ const TagSchema = new Schema({
 });
 
 module.exports = {
-  Tag: mongoose.model('Tag', TagSchema),
   Article: mongoose.model('Article', ArticleSchema),
+  Comment: mongoose.model('Comment', CommentSchema),
+  Session: mongoose.model('Session', SessionSchema),
+  Tag: mongoose.model('Tag', TagSchema),
 };

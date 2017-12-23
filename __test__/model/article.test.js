@@ -1,4 +1,4 @@
-const moment = require('moment');
+const { DateTime } = require('luxon');
 const { Article } = require('../../model/schema');
 const ArticleModel = require('../../model/article.js');
 
@@ -6,10 +6,7 @@ const articleModel = new ArticleModel();
 
 describe('[Model] article', () => {
   describe('Create', () => {
-    afterAll(async (done) => {
-      await Article.remove({}); // Clear Article collection
-      done();
-    });
+    afterAll(() => Article.remove({}));
 
     test('Error: empty parameter', async () => {
       expect.assertions(1);
@@ -26,8 +23,8 @@ describe('[Model] article', () => {
         title: 'jest-test-title',
         begins: 'jest-test-begins',
         content: 'jest-test-content',
-        url: `jest-test-url-${moment().valueOf()}`,
-        coverImages: [`jest-test-image-${moment().valueOf()}`],
+        url: `jest-test-url-${DateTime.local().valueOf()}`,
+        coverImages: [`jest-test-image-${DateTime.local().valueOf()}`],
       };
       const article = await articleModel.create(options);
       const articleJSON = article.toJSON();
@@ -53,18 +50,15 @@ describe('[Model] article', () => {
       title: 'jest-test-title',
       begins: 'jest-test-begins',
       content: 'jest-test-content',
-      url: `jest-test-url-${moment().valueOf()}`,
-      coverImages: [`jest-test-image-${moment().valueOf()}`],
+      url: `jest-test-url-${DateTime.local().valueOf()}`,
+      coverImages: [`jest-test-image-${DateTime.local().valueOf()}`],
     };
 
     beforeEach(async () => {
-      const article = await articleModel.create(options);
-      testObj = article;
+      testObj = await articleModel.create(options);
     });
 
-    afterEach(async () => {
-      await Article.remove({}); // Clear Article collection
-    });
+    afterEach(() => Article.remove({}));
 
     test('Error: find article with null or undefined', async () => {
       expect.assertions(1);
@@ -98,8 +92,8 @@ describe('[Model] article', () => {
         title: 'jest-test-update-title',
         begins: 'jest-test-update-begins',
         content: 'jest-test-update-content',
-        url: `jest-test-update-url-${moment().valueOf()}`,
-        coverImages: [`jest-test-update-image-${moment().valueOf()}`],
+        url: `jest-test-update-url-${DateTime.local().valueOf()}`,
+        coverImages: [`jest-test-update-image-${DateTime.local().valueOf()}`],
       };
       const article = await articleModel.find(testObj.id, 'idu', { $set: payload });
       const articleJSON = article.toJSON();
@@ -136,8 +130,8 @@ describe('[Model] article', () => {
 
     test('Success: Find all article', async () => {
       const articleList = await articleModel.find({}, 'all');
-      expect(articleList).toHaveLength(1);
       expect.assertions(12);
+      expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();
         expect(articleJSON).toHaveProperty('__v', 0);
@@ -156,8 +150,8 @@ describe('[Model] article', () => {
 
     test('Success: Find article by default', async () => {
       const articleList = await articleModel.find();
-      expect(articleList).toHaveLength(1);
       expect.assertions(12);
+      expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();
         expect(articleJSON).toHaveProperty('__v', 0);
@@ -176,8 +170,8 @@ describe('[Model] article', () => {
 
     test('Success: Find article with wrong type', async () => {
       const articleList = await articleModel.find({}, 'error');
-      expect(articleList).toHaveLength(1);
       expect.assertions(12);
+      expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();
         expect(articleJSON).toHaveProperty('__v', 0);

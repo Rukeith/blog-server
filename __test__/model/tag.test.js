@@ -1,4 +1,4 @@
-const moment = require('moment');
+const { DateTime } = require('luxon');
 const { Tag } = require('../../model/schema');
 const TagModel = require('../../model/tag');
 
@@ -6,10 +6,7 @@ const tagModel = new TagModel();
 
 describe('[Model] tag, ', () => {
   describe('Create, ', () => {
-    afterAll(async (done) => {
-      await Tag.remove({}); // Clear Tag collection
-      done();
-    });
+    afterAll(() => Tag.remove({}));
 
     test('Error: empty parameter', async () => {
       expect.assertions(1);
@@ -21,7 +18,7 @@ describe('[Model] tag, ', () => {
     });
 
     test('Success: create tag with name', async () => {
-      const tagName = `jest-test-${moment().valueOf()}`;
+      const tagName = `jest-test-${DateTime.local().valueOf()}`;
       const tag = await tagModel.create(tagName);
       const tagJSON = tag.toJSON();
       expect.assertions(6);
@@ -36,16 +33,13 @@ describe('[Model] tag, ', () => {
 
   describe('Find, ', () => {
     let testObj;
-    const tagName = `jest-test-${moment().valueOf()}`;
+    const tagName = `jest-test-${DateTime.local().valueOf()}`;
 
     beforeEach(async () => {
-      const tag = await tagModel.create(tagName);
-      testObj = tag;
+      testObj = await tagModel.create(tagName);
     });
 
-    afterEach(async () => {
-      await Tag.remove({}); // Clear Tag collection
-    });
+    afterEach(() => Tag.remove({}));
 
     test('Error: find tag with null or undefined', async () => {
       expect.assertions(1);
@@ -69,7 +63,7 @@ describe('[Model] tag, ', () => {
     });
 
     test('Success: Find tag by id and update tag name', async () => {
-      const newName = `jest-test-update-${moment().valueOf()}`;
+      const newName = `jest-test-update-${DateTime.local().valueOf()}`;
       const tag = await tagModel.find(testObj.id, 'idu', { $set: { name: newName } });
       const tagJSON = tag.toJSON();
       expect.assertions(6);
@@ -110,8 +104,8 @@ describe('[Model] tag, ', () => {
 
     test('Success: Find tag by default', async () => {
       const tagList = await tagModel.find();
-      expect(tagList).toHaveLength(1);
       expect.assertions(7);
+      expect(tagList).toHaveLength(1);
       tagList.forEach((tag) => {
         const tagJSON = tag.toJSON();
         expect(tagJSON).toHaveProperty('__v', 0);
@@ -125,8 +119,8 @@ describe('[Model] tag, ', () => {
 
     test('Success: Find tag with wrong type', async () => {
       const tagList = await tagModel.find({}, 'error');
-      expect(tagList).toHaveLength(1);
       expect.assertions(7);
+      expect(tagList).toHaveLength(1);
       tagList.forEach((tag) => {
         const tagJSON = tag.toJSON();
         expect(tagJSON).toHaveProperty('__v', 0);
