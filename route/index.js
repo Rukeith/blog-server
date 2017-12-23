@@ -7,10 +7,11 @@ const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const sessionModel = new SessionModel();
 
-const indexSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'index', 'api', code, data]);
-const indexErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'index', 'api', code, error]);
+const indexSuccessResponse = (ctx, code, status, data) => successResponse(ctx, [status, 'index', 'api', code, data]);
+const indexErrorResponse = (ctx, code, status, error) => errorResponse(ctx, [status, 'index', 'api', code, error]);
 
 module.exports = (api) => {
+  /* istanbul ignore next */
   api.get('/', ctx => ctx.render('index', { title: 'Rukeith blog backend api server' }));
 
   api.post('/login', validateParameters('post/login'), async (ctx) => {
@@ -25,7 +26,7 @@ module.exports = (api) => {
     try {
       await sessionModel.create({ token, expiredAt });
       indexSuccessResponse(ctx, 1000, HTTPStatus.ACCEPTED, { token });
-    } catch (error) {
+    } catch (error) { /* istanbul ignore next */
       indexErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR);
     }
   });

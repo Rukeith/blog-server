@@ -24,12 +24,11 @@ describe('[Model] session', () => {
       };
       const session = await sessionModel.create(options);
       const sessionJSON = session.toJSON();
-      expect.assertions(7);
+      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
       expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
       expect(sessionJSON).toHaveProperty('createdAt');
       expect(sessionJSON).toHaveProperty('updatedAt');
     });
@@ -76,12 +75,11 @@ describe('[Model] session', () => {
       };
       const session = await sessionModel.find(testObj.id, 'idu', { $set: payload });
       const sessionJSON = session.toJSON();
-      expect.assertions(7);
+      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
       expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(payload.expiredAt));
       expect(sessionJSON).toHaveProperty('createdAt');
       expect(sessionJSON).toHaveProperty('updatedAt');
     });
@@ -89,12 +87,11 @@ describe('[Model] session', () => {
     test('Success: Find session by id', async () => {
       const session = await sessionModel.find(testObj.id, 'id');
       const sessionJSON = session.toJSON();
-      expect.assertions(7);
+      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
       expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
       expect(sessionJSON).toHaveProperty('createdAt');
       expect(sessionJSON).toHaveProperty('updatedAt');
     });
