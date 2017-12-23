@@ -128,6 +128,52 @@ describe('[Route] article', () => {
     });
   });
 
+  describe('Create comment', () => {
+    let TEST_ARTICLE;
+
+    beforeEach(async () => {
+      const now = DateTime.local().valueOf();
+      TEST_ARTICLE = await Article.create({
+        url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
+        begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+      });
+    });
+
+    test('Error: not exist article', async () => {
+      const now = DateTime.local().valueOf();
+      const response = await request(app.callback())
+        .post('/articles/test/comments')
+        .send({
+          username: `jest-test-username-${now}`,
+          context: `jest-test-context-${now}`,
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['commentApi-1000']);
+      expect(body).toHaveProperty('message', langUS['error-commentApi-1000']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: create comment', async () => {
+      const now = DateTime.local().valueOf();
+      const response = await request(app.callback())
+        .post(`/articles/${TEST_ARTICLE.id}/comments`)
+        .send({
+          username: `jest-test-username-${now}`,
+          context: `jest-test-context-${now}`,
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.CREATED);
+      expect(body).toHaveProperty('status', HTTPStatus.CREATED);
+      expect(body).toHaveProperty('message', langUS['success-commentApi-1000']);
+    });
+  });
+
   describe('Get articles', () => {
     let TEST_ARTICLES = [];
 

@@ -2,15 +2,19 @@ const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const TagModel = require('../model/tag.js');
 const ArticleModel = require('../model/article.js');
+const CommentModel = require('../model/comment.js');
 const { verifyToken } = require('../middleware/auth.js');
 const { validateParameters } = require('../middleware/data.js');
 const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const tagModel = new TagModel();
+const commentModel = new CommentModel();
 const articleModel = new ArticleModel();
 
 const articleSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'article', 'api', code, data]);
 const articleErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'article', 'api', code, error]);
+const commentSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'comment', 'api', code, data]);
+const commentErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'comment', 'api', code, error]);
 
 module.exports = (api) => {
   /**
@@ -113,6 +117,85 @@ module.exports = (api) => {
       articleSuccessResponse(ctx, 1000, HTTPStatus.CREATED);
     } catch (error) {
       articleErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);
+    }
+  });
+
+  /**
+   * @api {post} /articles/:articleId/comments Create article's comment
+   * @apiVersion 0.1.0
+   * @apiName CreateComment
+   * @apiGroup Comment
+   * @apiPermission anyone
+   * @apiDescription Create article's comment
+   *
+   * @apiHeader {String} Rukeith-Token Access token
+   * @apiHeaderExample {json} Token-Example
+   *    {
+   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+   *        eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjM
+   *        TE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.
+   *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
+   *    }
+   *
+   * @apiParam {String} articleId article's id
+   * @apiParam {String} username comment's content
+   * @apiParam {String} [email] comment's email
+   * @apiParam {String} context comment context
+   * @apiParamExample {params} Create-Comment
+   *    {
+   *      "username": "guest",
+   *      "email": "test@test.test",
+   *      "context": "Jest test"
+   *    }
+   *
+   * @apiSuccess {Number} status HTTP Status code
+   * @apiSuccess {String} message Info message
+   * @apiSuccessExample {json} Create-Comment
+   *    HTTP/1.1 201 Created
+   *    {
+   *      "status": 201,
+   *      "message": "success"
+   *    }
+   *
+   * @apiError {String} level error level
+   * @apiError {String} message error message
+   * @apiError {Number} status HTTP Status code
+   * @apiErrorExample {json} Token-Error
+   *    HTTP/1.1 401 Unauthorized
+   *    {
+   *      "status": 401,
+   *      "level": "warning",
+   *      "message": "Access token is invalid"
+   *    }
+   *
+   * @apiErrorExample {json} Server-Error
+   *    HTTP/1.1 500 Internal Server Error
+   *    {
+   *      "status": 500,
+   *      "level": "error",
+   *      "message": "Create article processing failed"
+   *    }
+   */
+  api.post('/articles/:articleId/comments', validateParameters('post/articles/:articleId/comments'), async (ctx) => {
+    const { articleId } = ctx.params;
+    const { username, email, context } = ctx.request.body;
+
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        articleErrorResponse(ctx, 1003);
+        return;
+      }
+
+      await commentModel.create({
+        username,
+        email,
+        context,
+        article_id: article.id,
+      });
+      commentSuccessResponse(ctx, 1000, HTTPStatus.CREATED);
+    } catch (error) {
+      commentErrorResponse(ctx, 1000, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
@@ -279,6 +362,99 @@ module.exports = (api) => {
       articleSuccessResponse(ctx, 1002, HTTPStatus.OK, formatArticle);
     } catch (error) {
       articleErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR, error);
+    }
+  });
+
+  /**
+   * @api {get} /articles/:articleId/comments Get article's comments
+   * @apiVersion 0.1.0
+   * @apiName GetComments
+   * @apiGroup Comment
+   * @apiPermission anyone
+   * @apiDescription Get article's comments
+   *
+   * @apiHeader {String} Rukeith-Token Access token
+   * @apiHeaderExample {json} Token-Example
+   *    {
+   *      "Rukeith-Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+   *        eyJpZCI6IjA4YjcyMjZjLTU1MjQtNDY3YS1iMDk0LTRkN2U1M2VjM
+   *        TE0NCIsImlhdCI6MTUwNTIwNTczNSwiZXhwIjoxNTA1ODEwNTM1LCJpc3MiOiJpc3RhZ2luZyJ9.
+   *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
+   *    }
+   *
+   * @apiParam {Number} [limit=10] the limit of query amount
+   * @apiParam {Number} [offset=0] start query tags at which number
+   * @apiParam {String} [direct='desc'] sort is desc or asc
+   * @apiParam {String} [sortby='createdAt'] sort data by which field
+   *
+   * @apiSuccess {Number} status HTTP Status code
+   * @apiSuccess {String} message Info message
+   * @apiSuccessExample {json} Get-Comment
+   *    HTTP/1.1 200 OK
+   *    {
+   *      "status": 200,
+   *      "message": "success"
+   *    }
+   *
+   * @apiError {String} level error level
+   * @apiError {String} message error message
+   * @apiError {Number} status HTTP Status code
+   * @apiErrorExample {json} Token-Error
+   *    HTTP/1.1 401 Unauthorized
+   *    {
+   *      "status": 401,
+   *      "level": "warning",
+   *      "message": "Access token is invalid"
+   *    }
+   *
+   * @apiErrorExample {json} Server-Error
+   *    HTTP/1.1 500 Internal Server Error
+   *    {
+   *      "status": 500,
+   *      "level": "error",
+   *      "message": "Create article processing failed"
+   *    }
+   */
+  api.get('/articles/:articleId/comments', validateParameters('get/articles/:articleId/comments'), async (ctx) => {
+    const { articleId } = ctx.params;
+    let {
+      offset = 0,
+      limit = 10,
+      direct = 'desc',
+    } = ctx.query;
+    const { sortby = 'createdAt' } = ctx.query;
+
+    if (!_.isInteger(offset)) offset = _.toInteger(offset);
+    if (offset < 0) offset = 0;
+    if (!_.isInteger(limit)) limit = _.toInteger(limit);
+    if (limit > 10 || limit < 0) limit = 10;
+    if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
+
+    const options = {
+      limit,
+      sort: {},
+      skip: offset,
+      select: {
+        url: 1,
+        title: 1,
+        begins: 1,
+        createdAt: 1,
+        coverImages: 1,
+      },
+    };
+    options.sort[sortby] = direct;
+
+    try {
+      const article = await articleModel.find(articleId, 'id');
+      if (_.isNil(article)) {
+        articleErrorResponse(ctx, 1003);
+        return;
+      }
+
+      const comments = await commentModel.find({ article_id: articleId }, 'all', options);
+      commentSuccessResponse(ctx, 1001, HTTPStatus.OK, comments);
+    } catch (error) {
+      commentErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 

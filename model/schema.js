@@ -44,6 +44,7 @@ const CommentSchema = new Schema({
     required: true,
     type: Schema.Types.String,
   },
+  deletedAt: Schema.Types.Date,
 }, {
   timestamps: true,
 });

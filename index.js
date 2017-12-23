@@ -73,12 +73,14 @@ const pug = new Pug({
 pug.use(app);
 
 const index = require('./route/index.js');
-const tag = require('./route/tag.js');
 const article = require('./route/article.js');
+const comment = require('./route/comment.js');
+const tag = require('./route/tag.js');
 
 index(router);
-tag(router);
 article(router);
+comment(router);
+tag(router);
 
 app.on('error', (err, ctx) => {
   try {

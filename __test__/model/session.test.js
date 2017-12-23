@@ -59,12 +59,11 @@ describe('[Model] session', () => {
     test('Success: Find one session', async () => {
       const session = await sessionModel.find({ _id: testObj.id }, 'one');
       const sessionJSON = session.toJSON();
-      expect.assertions(7);
+      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
       expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
       expect(sessionJSON).toHaveProperty('createdAt');
       expect(sessionJSON).toHaveProperty('updatedAt');
     });
@@ -98,7 +97,7 @@ describe('[Model] session', () => {
 
     test('Success: Find all session', async () => {
       const sessionList = await sessionModel.find({}, 'all');
-      expect.assertions(8);
+      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
@@ -106,7 +105,6 @@ describe('[Model] session', () => {
         expect(sessionJSON).toHaveProperty('_id');
         expect(sessionJSON).toHaveProperty('token', options.token);
         expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
         expect(sessionJSON).toHaveProperty('createdAt');
         expect(sessionJSON).toHaveProperty('updatedAt');
       });
@@ -114,7 +112,7 @@ describe('[Model] session', () => {
 
     test('Success: Find session by default', async () => {
       const sessionList = await sessionModel.find();
-      expect.assertions(8);
+      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
@@ -122,7 +120,6 @@ describe('[Model] session', () => {
         expect(sessionJSON).toHaveProperty('_id');
         expect(sessionJSON).toHaveProperty('token', options.token);
         expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
         expect(sessionJSON).toHaveProperty('createdAt');
         expect(sessionJSON).toHaveProperty('updatedAt');
       });
@@ -130,7 +127,7 @@ describe('[Model] session', () => {
 
     test('Success: Find session with wrong type', async () => {
       const sessionList = await sessionModel.find({}, 'error');
-      expect.assertions(8);
+      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
@@ -138,7 +135,7 @@ describe('[Model] session', () => {
         expect(sessionJSON).toHaveProperty('_id');
         expect(sessionJSON).toHaveProperty('token', options.token);
         expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(DateTime.local(sessionJSON.expiredAt)).toEqual(DateTime.local(options.expiredAt));
+  
         expect(sessionJSON).toHaveProperty('createdAt');
         expect(sessionJSON).toHaveProperty('updatedAt');
       });

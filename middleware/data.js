@@ -60,6 +60,32 @@ module.exports = {
             articleId: { type: 'string' },
           });
           break;
+        // Comment
+        case 'post/articles/:articleId/comments':
+          ctx.verifyParams({
+            articleId: { type: 'string' },
+            username: { type: 'string' },
+            email: { type: 'string', required: false },
+            context: { type: 'string' },
+          });
+          break;
+        case 'get/articles/:articleId/comments':
+          ctx.verifyParams({
+            sortby: { type: 'string', required: false },
+            direct: { type: 'string', required: false },
+          });
+          break;
+        case 'put/comments/:commentId':
+          ctx.verifyParams({
+            commentId: { type: 'string' },
+            context: { type: 'string' },
+          });
+          break;
+        case 'delete/comments/:commentId':
+          ctx.verifyParams({
+            commentId: { type: 'string' },
+          });
+          break;
         // Tag
         case 'post/tags':
           ctx.verifyParams({
