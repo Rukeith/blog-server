@@ -6,7 +6,6 @@ const cors = require('kcors');
 const Pug = require('koa-pug');
 const Raven = require('raven');
 const i18n = require('koa-i18n');
-const limit = require('koa-limit');
 const views = require('koa-views');
 const koaBody = require('koa-body');
 const serve = require('koa-static');
@@ -57,10 +56,6 @@ app
   .use(router.routes())
   .use(router.allowedMethods({ throw: true }))
   .use(parameter(app))
-  .use(limit({
-    limit: 1000,
-    interval: 1000 * 60 * 60,
-  }))
   .use(i18n(app, {
     locales: ['us'],
     extension: '.json',
