@@ -1,0 +1,26 @@
+version: "3"
+services:
+  mongo:
+    image: mongo
+    container_name: blog-server-mongo
+    restart: on-failure:5
+    labels:
+      - "CI-TEST=jenkins"
+    networks:
+      - backend
+
+  web:
+    build: ./
+    image: backend
+    container_name: blog-server-backend
+    labels:
+      - "CI-TEST=jenkins"
+    networks:
+      - backend
+    depends_on:
+      - mongo
+
+networks:
+  backend:
+    labels:
+      - "CI-TEST=jenkins"

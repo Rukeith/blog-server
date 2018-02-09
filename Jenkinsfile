@@ -3,19 +3,20 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh '''yarn install
-yarn lint'''
+        sh 'yarn install'
+        sleep 5s
+        sh 'yarn lint'
       }
     }
     stage('Test') {
       steps {
-        sh 'docker pull mongo'
-        sleep 20
-        sh 'docker run --rm -p 27017:27017 mongo'
+        sh 'docker-compose up --build --abort-on-container-exit'
       }
     }
-  }
-  environment {
-    NODE_ENV = 'test'
+    stage('Clean') {
+      steps {
+        sh 'docker system prune --filter "label=CI-TEST=jenkins" -af'
+      }
+    }
   }
 }
