@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh '''source ~/.bashrc
+        sh '''. ~/.bashrc
 yarn install'''
         sleep 10
         sh 'yarn lint'
