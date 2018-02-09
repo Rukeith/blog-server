@@ -13,8 +13,8 @@ const articleModel = new ArticleModel();
 
 const articleSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'article', 'api', code, data]);
 const articleErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'article', 'api', code, error]);
-const commentSuccessResponse = (ctx, code, status = HTTPStatus.OK, data) => successResponse(ctx, [status, 'comment', 'api', code, data]);
-const commentErrorResponse = (ctx, code, status = HTTPStatus.BAD_REQUEST, error) => errorResponse(ctx, [status, 'comment', 'api', code, error]);
+const commentSuccessResponse = (ctx, code, status = HTTPStatus.CREATED, data) => successResponse(ctx, [status, 'comment', 'api', code, data]);
+const commentErrorResponse = (ctx, code, status, error) => errorResponse(ctx, [status, 'comment', 'api', code, error]);
 
 module.exports = (api) => {
   /**
@@ -193,7 +193,7 @@ module.exports = (api) => {
         context,
         article_id: article.id,
       });
-      commentSuccessResponse(ctx, 1000, HTTPStatus.CREATED);
+      commentSuccessResponse(ctx, 1000);
     } catch (error) {
       commentErrorResponse(ctx, 1000, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
