@@ -7,3 +7,6 @@ package-lock.json
 README.md
 Procfile
 LICENSE
+Dockerfile
+docker-compose.yml
+Jenkinsfile
