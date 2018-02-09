@@ -5,6 +5,10 @@ This repository which is a nodejs api server is made for my personal blog.
 
 [![pipeline status](https://gitlab.com/Rukeith/blog-server/badges/master/pipeline.svg)](https://gitlab.com/Rukeith/blog-server/commits/master)
 
+## Usage
+I use nodejs and mongoDB to develop my blog server, track api's errors with sentry.
+For code quality, I use eslint and jest with gitlab ci and jenkins to run auto testing then eploy to heroku.
+
 ## Required
 * Node >= 9.5.0
 * MongoDB (I use mLab to be my MongoDB)
@@ -15,6 +19,14 @@ This repository which is a nodejs api server is made for my personal blog.
 * `NOED_ENV` : `yarn start` is production and `yarn dev` is development
 * `MONGODB_URI` : default is localhost
 * `SENTRY_DSN` : optional
+
+## DevOps
+* Jest
+* GitLab CI
+* Jenkins + Docker Compose
+
+## Server
+* Heroku
 
 ## Setup
 
