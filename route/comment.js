@@ -74,7 +74,7 @@ module.exports = (api) => {
       }
 
       await commentModel.find(commentId, 'idu', { $set: { context } });
-      commentSuccessResponse(ctx, 1002, HTTPStatus.OK);
+      commentSuccessResponse(ctx, 1002);
     } catch (error) {
       commentErrorResponse(ctx, 1003, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
@@ -138,7 +138,7 @@ module.exports = (api) => {
       }
 
       await commentModel.find(commentId, 'idu', { deletedAt: new Date() });
-      commentSuccessResponse(ctx, 1003, HTTPStatus.OK);
+      commentSuccessResponse(ctx, 1003);
     } catch (error) {
       commentErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }

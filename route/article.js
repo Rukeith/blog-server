@@ -412,7 +412,7 @@ module.exports = (api) => {
    *    {
    *      "status": 500,
    *      "level": "error",
-   *      "message": "Create article processing failed"
+   *      "message": "Get comments process failed"
    *    }
    */
   api.get('/articles/:articleId/comments', validateParameters('get/articles/:articleId/comments'), async (ctx) => {
@@ -435,11 +435,9 @@ module.exports = (api) => {
       sort: {},
       skip: offset,
       select: {
-        url: 1,
-        title: 1,
-        begins: 1,
+        username: 1,
+        context: 1,
         createdAt: 1,
-        coverImages: 1,
       },
     };
     options.sort[sortby] = direct;
@@ -451,7 +449,8 @@ module.exports = (api) => {
         return;
       }
 
-      const comments = await commentModel.find({ article_id: articleId }, 'all', options);
+      let comments = await commentModel.find({ article_id: articleId }, 'all', options);
+      comments = _.map(comments, value => Object.assign({}, value.toJSON(), { id: value._id }));
       commentSuccessResponse(ctx, 1001, HTTPStatus.OK, comments);
     } catch (error) {
       commentErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);

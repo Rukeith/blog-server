@@ -9,8 +9,9 @@ const { Article, Comment, Session } = require('../../model/schema');
 
 describe('[Route] comment', () => {
   let token;
-  let testObj;
+  let TEST_COMMENT;
   let TEST_ARTICLE;
+  let TEST_DELETE_COMMENT;
 
   beforeEach(async () => {
     const now = DateTime.local().valueOf();
@@ -21,10 +22,16 @@ describe('[Route] comment', () => {
       begins: `jest-test-begins-${now}`,
       content: `jest-test-content-${now}`,
     });
-    testObj = await Comment.create({
+    TEST_COMMENT = await Comment.create({
       article_id: TEST_ARTICLE.id,
       username: `jest-test-username-${now}`,
       context: `jest-test-context-${now}`,
+    });
+    TEST_DELETE_COMMENT = await Comment.create({
+      deletedAt: new Date(),
+      article_id: TEST_ARTICLE.id,
+      username: `jest-test-username-${now + 1}`,
+      context: `jest-test-context-${now + 1}`,
     });
     return Session.create({
       token,
@@ -34,7 +41,7 @@ describe('[Route] comment', () => {
   afterEach(() => Promise.all([Article.remove({}), Comment.remove({})]));
 
   describe('Update comment', () => {
-    test('Error: update comment not existed id', async () => {
+    test('Error: update comment with not existed id', async () => {
       const response = await request(app.callback())
         .put('/comments/test')
         .set('Rukeith-Token', token)
@@ -48,10 +55,24 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
+    test('Error: update comment with deleted id', async () => {
+      const response = await request(app.callback())
+        .put(`/comments/${TEST_DELETE_COMMENT.id}`)
+        .set('Rukeith-Token', token)
+        .send({ context: `jest-test-context-${DateTime.local().valueOf()}` });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['commentApi-1002']);
+      expect(body).toHaveProperty('message', langUS['error-commentApi-1002']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
     test('Success: update comment', async () => {
       const commentContext = `jest-test-update-context-${DateTime.local().valueOf()}`;
       const response = await request(app.callback())
-        .put(`/comments/${testObj.id}`)
+        .put(`/comments/${TEST_COMMENT.id}`)
         .set('Rukeith-Token', token)
         .send({ context: commentContext });
 
@@ -61,7 +82,7 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('message', langUS['success-commentApi-1002']);
       expect(body).not.toHaveProperty('data');
 
-      const comment = await Comment.findById(testObj.id);
+      const comment = await Comment.findById(TEST_COMMENT.id);
       const commentJson = comment.toJSON();
       expect(commentJson).toHaveProperty('context', commentContext);
       expect(commentJson.createdAt).not.toBe(commentJson.updatedAt);
@@ -82,9 +103,22 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
+    test('Error: delete comment with deleted id', async () => {
+      const response = await request(app.callback())
+        .del(`/comments/${TEST_DELETE_COMMENT.id}`)
+        .set('Rukeith-Token', token);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['commentApi-1002']);
+      expect(body).toHaveProperty('message', langUS['error-commentApi-1002']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
     test('Success: delete comment', async () => {
       const response = await request(app.callback())
-        .del(`/comments/${testObj.id}`)
+        .del(`/comments/${TEST_COMMENT.id}`)
         .set('Rukeith-Token', token);
 
       const { body, status } = response;
@@ -93,7 +127,7 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('message', langUS['success-commentApi-1003']);
       expect(body).not.toHaveProperty('data');
 
-      const comment = await Comment.findById(testObj.id);
+      const comment = await Comment.findById(TEST_COMMENT.id);
       const commentJson = comment.toJSON();
       expect(commentJson).toHaveProperty('deletedAt');
       expect(commentJson.createdAt).not.toBe(commentJson.updatedAt);

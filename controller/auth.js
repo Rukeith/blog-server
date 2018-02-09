@@ -13,9 +13,7 @@ module.exports = {
   },
 
   verifyToken: (token) => {
-    if (_.isEmpty(token)) {
-      return { valid: false };
-    }
+    if (_.isNil(token)) return { valid: false };
     return { valid: true, data: jwt.verify(token, Buffer.from(process.env.JWT_SECRET)) };
   },
 };

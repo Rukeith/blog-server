@@ -6,7 +6,12 @@ const HTTPStatus = require('http-status');
 const app = require('../../index.js');
 const langUS = require('../../locales/us.json');
 const errorLevel = require('../../config/error.json');
-const { Article, Session, Tag } = require('../../model/schema');
+const {
+  Article,
+  Comment,
+  Session,
+  Tag,
+} = require('../../model/schema');
 
 describe('[Route] article', () => {
   let token;
@@ -130,6 +135,7 @@ describe('[Route] article', () => {
 
   describe('Create comment', () => {
     let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
 
     beforeEach(async () => {
       const now = DateTime.local().valueOf();
@@ -138,6 +144,13 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+      });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
       });
     });
 
@@ -155,6 +168,23 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['commentApi-1000']);
       expect(body).toHaveProperty('message', langUS['error-commentApi-1000']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: not exist article', async () => {
+      const now = DateTime.local().valueOf();
+      const response = await request(app.callback())
+        .post(`/articles/${TEST_DELETE_ARTICLE.id}/comments`)
+        .send({
+          username: `jest-test-username-${now}`,
+          context: `jest-test-context-${now}`,
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
       expect(body).toHaveProperty('extra', '');
     });
 
@@ -322,6 +352,125 @@ describe('[Route] article', () => {
       expect(body.data).toHaveProperty('content', TEST_ARTICLE.content);
       expect(body.data).toHaveProperty('createdAt');
       expect(body.data).toHaveProperty('updatedAt');
+    });
+  });
+
+  describe('Get article\'s comments', () => {
+    let TEST_ARTICLE;
+    let TEST_DELETE_ARTICLE;
+    let TEST_COMMENTS = [];
+
+    beforeEach(async () => {
+      TEST_COMMENTS = [];
+      const now = DateTime.local().valueOf();
+      TEST_ARTICLE = await Article.create({
+        url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
+        begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+      });
+      TEST_DELETE_ARTICLE = await Article.create({
+        deletedAt: new Date(),
+        url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
+        begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+      });
+      const commentObj1 = await Comment.create({
+        article_id: TEST_ARTICLE.id,
+        username: `jest-test-username-${now}`,
+        context: `jest-test-context-${now}`,
+      });
+      const commentObj2 = await Comment.create({
+        article_id: TEST_ARTICLE.id,
+        username: `jest-test-username-${now + 1}`,
+        context: `jest-test-context-${now + 1}`,
+      });
+      TEST_COMMENTS.push(commentObj2);
+      TEST_COMMENTS.push(commentObj1);
+    });
+
+    test('Error: get article\'s comments with not existed article id', async () => {
+      const response = await request(app.callback())
+        .get('/articles/test/comments');
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['commentApi-1001']);
+      expect(body).toHaveProperty('message', langUS['error-commentApi-1001']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: get article\'s comments with deleted article id', async () => {
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_DELETE_ARTICLE.id}/comments`);
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
+      expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Success: query comments with invalid query parameters', async () => {
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_ARTICLE.id}/comments`)
+        .query({ limit: -1, offset: -1, direct: 'test' });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-commentApi-1001']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveLength(2);
+      _.forEach(body.data, (data, index) => {
+        expect(data).toHaveProperty('id', TEST_COMMENTS[index].id);
+        expect(data).toHaveProperty('context', TEST_COMMENTS[index].context);
+        expect(data).toHaveProperty('username', TEST_COMMENTS[index].username);
+        expect(data).toHaveProperty('createdAt');
+      });
+    });
+
+    test('Success: query comments with limit and offset', async () => {
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_ARTICLE.id}/comments`)
+        .query({ limit: 1, offset: 1 });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-commentApi-1001']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveLength(1);
+      _.forEach(body.data, (data) => {
+        expect(data).toHaveProperty('id', TEST_COMMENTS[1].id);
+        expect(data).toHaveProperty('context', TEST_COMMENTS[1].context);
+        expect(data).toHaveProperty('username', TEST_COMMENTS[1].username);
+        expect(data).toHaveProperty('createdAt');
+      });
+    });
+
+    test('Success: query comments with sortby and direct', async () => {
+      const response = await request(app.callback())
+        .get(`/articles/${TEST_ARTICLE.id}/comments`)
+        .query({ sortby: 'createdAt', direct: 'asc' });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.OK);
+      expect(body).toHaveProperty('status', HTTPStatus.OK);
+      expect(body).toHaveProperty('message', langUS['success-commentApi-1001']);
+      expect(body).toHaveProperty('data');
+      expect(body.data).toHaveLength(2);
+      _.forEach(body.data, (data, index) => {
+        const newIndex = (index === 0) ? 1 : 0;
+        expect(data).toHaveProperty('id', TEST_COMMENTS[newIndex].id);
+        expect(data).toHaveProperty('context', TEST_COMMENTS[newIndex].context);
+        expect(data).toHaveProperty('username', TEST_COMMENTS[newIndex].username);
+        expect(data).toHaveProperty('createdAt');
+        expect(data).toHaveProperty('createdAt');
+      });
     });
   });
 
