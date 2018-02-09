@@ -9,7 +9,9 @@ yarn lint'''
     }
     stage('Test') {
       steps {
-        sh 'yarn test'
+        sh 'docker pull mongo'
+        sleep 20
+        sh 'docker run --rm -p 27017:27017 mongo'
       }
     }
   }
