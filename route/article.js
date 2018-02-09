@@ -678,7 +678,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} {{articleId}} true is publishe and false is unpublish
+   * @apiParam {String} articleId true is publishe and false is unpublish
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
