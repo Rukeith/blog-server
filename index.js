@@ -3,6 +3,7 @@ const Koa = require('koa');
 const _ = require('lodash');
 const path = require('path');
 const cors = require('kcors');
+const http2 = require('http2');
 const Pug = require('koa-pug');
 const Raven = require('raven');
 const i18n = require('koa-i18n');
@@ -118,7 +119,7 @@ app.on('error', (err, ctx) => {
 
 portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
 portfinder.getPortPromise().then((port) => {
-  app.listen(port, () => {
+  http2.createServer(app.callback()).listen(port, () => {
     console.info('===========================================');
     console.info(`===== Server is running at port: ${port} =====`);
     console.info('===========================================');
