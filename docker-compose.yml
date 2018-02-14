@@ -10,7 +10,9 @@ services:
       - backend
 
   web:
-    build: ./
+    build:
+      context: ./
+      dockerfile: Dockerfile
     image: backend
     container_name: blog-server-backend
     labels:
