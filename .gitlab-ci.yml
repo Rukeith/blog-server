@@ -21,15 +21,15 @@ stages:
 lint:
   image: node:latest
   script:
-   - npm install
-   - npm run lint
+   - yarn
+   - yarn lint
   stage: lint
 
 test:
   image: node:latest
   script:
-   - npm install
-   - npm test
+   - yarn
+   - yarn test
   stage: test
 
 staging:
