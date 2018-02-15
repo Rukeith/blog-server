@@ -5,7 +5,7 @@
   "scripts": {
     "start": "./node_modules/.bin/cross-env NODE_ENV=production node index.js",
     "dev": "./node_modules/.bin/cross-env NODE_ENV=deployment nodemon index.js",
-    "test": "./node_modules/.bin/cross-env USERNAME=jest PASSWORD=jest-test JWT_SECRET=blog jest --no-cache --forceExit --runInBand",
+    "test": "./node_modules/.bin/cross-env JWT_SECRET=blog jest --no-cache --forceExit --runInBand",
     "lint": "./node_modules/.bin/eslint --quiet ./*",
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
+    "dotenv": "^5.0.0",
     "http-status": "^1.0.1",
     "jsonwebtoken": "^8.1.1",
     "kcors": "^2.2.1",

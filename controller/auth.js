@@ -7,12 +7,12 @@ const encryptPassword = (password, salt) => _.toString(HmacSHA512(password, salt
 module.exports = {
   encryptPassword,
 
-  verifyPassword: (password, salt) => {
-    if (_.isEmpty(password) || _.isEmpty(salt)) {
+  verifyPassword: (password) => {
+    if (_.isEmpty(password)) {
       throw new Error(['auth', 'controller', 1000]);
     }
 
-    return (encryptPassword(process.env.PASSWORD, salt) === password);
+    return (encryptPassword(`${password}${process.env.SALT}`, process.env.SALT) === process.env.HASH_PASSWORD);
   },
 
   verifyToken: (token) => {

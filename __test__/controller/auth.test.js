@@ -10,17 +10,11 @@ describe('[Controller] auth', () => {
       }).toThrowError('auth,controller,1000');
     });
 
-    it('salt is empty', () => {
-      expect(() => {
-        verifyPassword('test');
-      }).toThrowError('auth,controller,1000');
-    });
-
     it('Password valid', () => {
       process.env.PASSWORD = `${Math.random()}`;
-      const salt = `${Math.random()}`;
-      const encrypt = _.toString(HmacSHA512(process.env.PASSWORD, salt));
-      expect(verifyPassword(encrypt, salt)).toBe(true);
+      process.env.SALT = `${Math.random()}`;
+      process.env.HASH_PASSWORD = _.toString(HmacSHA512(`${process.env.PASSWORD}${process.env.SALT}`, process.env.SALT));
+      expect(verifyPassword(process.env.PASSWORD)).toBe(true);
     });
   });
 
