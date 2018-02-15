@@ -38,6 +38,7 @@ staging:
   script:
     - gem install dpl
     - echo $HEROKU_STAGING_API_KEY
+    - echo $JWT_SECRET
     - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
   only:
     - master
