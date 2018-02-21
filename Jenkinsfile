@@ -3,9 +3,9 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh 'npm install'
+        sh 'yarn install'
         sleep 10
-        sh 'npm run lint'
+        sh 'yarn lint'
       }
     }
     stage('Test') {
