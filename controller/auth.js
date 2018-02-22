@@ -17,9 +17,16 @@ module.exports = {
 
   verifyToken: (token) => {
     if (_.isNil(token)) return { valid: false };
-    return {
-      valid: true,
-      data: jwt.verify(token, Buffer.from(process.env.JWT_SECRET)),
-    };
+    try {
+      return {
+        valid: true,
+        data: jwt.verify(token, Buffer.from(process.env.JWT_SECRET)),
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        data: error,
+      };
+    }
   },
 };

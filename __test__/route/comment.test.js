@@ -52,7 +52,7 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['commentApi-1003']);
       expect(body).toHaveProperty('message', langUS['error-commentApi-1003']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Comment\"');
     });
 
     test('Error: update comment with deleted id', async () => {
@@ -100,7 +100,7 @@ describe('[Route] comment', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['commentApi-1004']);
       expect(body).toHaveProperty('message', langUS['error-commentApi-1004']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Comment\"');
     });
 
     test('Error: delete comment with deleted id', async () => {

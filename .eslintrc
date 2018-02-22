@@ -23,7 +23,8 @@
   },
   "rules": {
     "semi": [ 2, "always" ],
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "no-useless-escape": "off"
   },
   "extends": "airbnb-base"
 }

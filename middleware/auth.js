@@ -19,9 +19,10 @@ module.exports = {
         errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1000]);
         return;
       }
-      const valid = verifyToken(token);
-      if (!valid.valid) {
-        errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1001]);
+
+      const validResult = verifyToken(token);
+      if (!validResult.valid) {
+        errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1001, validResult.data]);
         return;
       }
       await next();

@@ -58,6 +58,7 @@ module.exports = {
       if (error.message) {
         const errors = error.message.split(',');
         if (errors.length === 3) extra = translateError(...errors, true);
+        else extra = error.message;
       } else {
         extra = _.toString(error);
       }

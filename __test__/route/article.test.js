@@ -15,13 +15,24 @@ const {
 
 describe('[Route] article', () => {
   let token;
+  let invalidToken;
+
   beforeEach(() => {
     token = jwt.sign({ ip: '127.0.0.1' }, Buffer.from(process.env.JWT_SECRET), { expiresIn: '5m', issuer: 'rukeith' });
-    return Session.create({
-      token,
-      expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
-    });
+    invalidToken = jwt.sign({ ip: '127.0.0.1' }, Buffer.from('invalid'), { expiresIn: '5m', issuer: 'rukeith' });
+
+    return Promise.all([
+      Session.create({
+        token,
+        expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
+      }),
+      Session.create({
+        token: invalidToken,
+        expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
+      }),
+    ]);
   });
+
   afterEach(() => Promise.all([Article.remove({}), Session.remove({})]));
 
   describe('Create article', () => {
@@ -74,7 +85,53 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1001']);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1001']);
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Tag\"');
+    });
+
+    test('Error: token is not existed', async () => {
+      const tag = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
+      const now = DateTime.local().valueOf();
+
+      const response = await request(app.callback())
+        .post('/articles')
+        .set('Rukeith-Token', 'empty')
+        .send({
+          title: `jest-test-title-${now}`,
+          begins: `jest-test-begins-${now}`,
+          content: `jest-test-content-${now}`,
+          tags: [tag.id, tag.id],
+          coverImages: ['https://www.google.com', 'https://www.google.com', 'https://www.yahoo.com'],
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.UNAUTHORIZED);
+      expect(body).toHaveProperty('status', HTTPStatus.UNAUTHORIZED);
+      expect(body).toHaveProperty('message', langUS['error-authMiddleware-1000']);
+      expect(body).toHaveProperty('level', errorLevel['authMiddleware-1000']);
       expect(body).toHaveProperty('extra', '');
+    });
+
+    test('Error: token is invalid', async () => {
+      const tag = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
+      const now = DateTime.local().valueOf();
+
+      const response = await request(app.callback())
+        .post('/articles')
+        .set('Rukeith-Token', invalidToken)
+        .send({
+          title: `jest-test-title-${now}`,
+          begins: `jest-test-begins-${now}`,
+          content: `jest-test-content-${now}`,
+          tags: [tag.id, tag.id],
+          coverImages: ['https://www.google.com', 'https://www.google.com', 'https://www.yahoo.com'],
+        });
+
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.UNAUTHORIZED);
+      expect(body).toHaveProperty('status', HTTPStatus.UNAUTHORIZED);
+      expect(body).toHaveProperty('message', langUS['error-authMiddleware-1001']);
+      expect(body).toHaveProperty('level', errorLevel['authMiddleware-1001']);
+      expect(body).toHaveProperty('extra', 'invalid signature');
     });
 
     test('Success: create article with url is default, tag and coverImages have duplicate values', async () => {
@@ -168,10 +225,10 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['commentApi-1000']);
       expect(body).toHaveProperty('message', langUS['error-commentApi-1000']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
     });
 
-    test('Error: not exist article', async () => {
+    test('Error: deleted article', async () => {
       const now = DateTime.local().valueOf();
       const response = await request(app.callback())
         .post(`/articles/${TEST_DELETE_ARTICLE.id}/comments`)
@@ -333,7 +390,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1004']);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1004']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
     });
 
     test('Success: get single article', async () => {
@@ -399,7 +456,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['commentApi-1001']);
       expect(body).toHaveProperty('message', langUS['error-commentApi-1001']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
     });
 
     test('Error: get article\'s comments with deleted article id', async () => {
@@ -555,7 +612,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1006']);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1006']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
     });
 
     test('Success: update article', async () => {
@@ -638,7 +695,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['articleApi-1007']);
       expect(body).toHaveProperty('message', langUS['error-articleApi-1007']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
     });
 
     test('Error: update article\'s tags with deleted article id', async () => {

@@ -262,7 +262,7 @@ describe('[Route] tag', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['tagApi-1004']);
       expect(body).toHaveProperty('message', langUS['error-tagApi-1004']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Tag\"');
     });
 
     test('Success: get single tag', async () => {
@@ -409,7 +409,7 @@ describe('[Route] tag', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['tagApi-1006']);
       expect(body).toHaveProperty('message', langUS['error-tagApi-1006']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Tag\"');
     });
 
     test('Success: update tag\'s name', async () => {
@@ -465,7 +465,7 @@ describe('[Route] tag', () => {
       expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
       expect(body).toHaveProperty('level', errorLevel['tagApi-1007']);
       expect(body).toHaveProperty('message', langUS['error-tagApi-1007']);
-      expect(body).toHaveProperty('extra', '');
+      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Tag\"');
     });
 
     test('Success: delete tag', async () => {
