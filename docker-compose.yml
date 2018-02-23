@@ -2,27 +2,25 @@ version: "3"
 services:
   mongo:
     image: mongo
-    container_name: blog-server-mongo
+    container_name: blog-database
     restart: on-failure:5
     labels:
       - "CI-TEST=jenkins"
     networks:
-      - backend
+      - blog-network
 
-  web:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+  server:
+    build: ./
     image: backend
-    container_name: blog-server-backend
+    container_name: blog-server
     labels:
       - "CI-TEST=jenkins"
     networks:
-      - backend
+      - blog-network
     depends_on:
       - mongo
 
 networks:
-  backend:
+  blog-network:
     labels:
       - "CI-TEST=jenkins"
