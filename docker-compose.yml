@@ -3,7 +3,6 @@ services:
   mongo:
     image: mongo
     container_name: blog-database
-    restart: on-failure:5
     labels:
       - "CI-TEST=jenkins"
     networks:
@@ -17,6 +16,15 @@ services:
       - "CI-TEST=jenkins"
     networks:
       - blog-network
+    environment:
+      - NODE_ENV=test
+      - MONGODB_URI=mongodb://blog-database:27017/rukeith-blog
+      - USERNAME=rukeith
+      - PASSWORD=iampassword
+      - SALT=iamsalt
+      - HASH_PASSWORD=418b24c67f21cb9da47b3732a59a207e62cb9a58d368166c5c99f5dbddc6ac9c7257ad513984c733ca1f3e1718798dab066ba3965fee15429f4a4391f586d15d
+      - JWT_SECRET=blog
+      - SENTRY_DSN
     depends_on:
       - mongo
 
