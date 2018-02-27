@@ -1,0 +1,12 @@
+node_modules
+public
+views
+.gitignore
+.gitlab-ci.yml
+docker-compose.yml
+Dockerfile
+Jenkinsfile
+LICENSE
+Procfile
+README.md
+yarn.lock

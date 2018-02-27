@@ -1,6 +1,6 @@
 {
   "name": "blog-server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "./node_modules/.bin/cross-env NODE_ENV=production node index.js",
@@ -10,7 +10,7 @@
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
   "engines": {
-    "node": ">=9.6.0"
+    "node": ">=9.6.1"
   },
   "repository": "https://github.com/Rukeith/blog-server.git",
   "author": "Rukeith <fenglan.crazydance@gmail.com>",

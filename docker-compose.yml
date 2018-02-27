@@ -1,4 +1,4 @@
-version: "3"
+version: "3.5"
 services:
   mongo:
     image: mongo
@@ -24,3 +24,4 @@ networks:
   blog-network:
     labels:
       - "CI-TEST=jenkins"
+    name: blog-network
