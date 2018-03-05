@@ -10,7 +10,7 @@ I use koa and mongoDB to develop my blog server and support http2, track api's e
 For code quality, I use eslint and jest with gitlab ci and jenkins to run auto testing then eploy to heroku.
 
 ## Required
-* Node >= 9.6.1
+* Node >= 9.0.0
 * MongoDB (I use mLab to be my MongoDB)
 * Sentry (Use for catch api error)
 
