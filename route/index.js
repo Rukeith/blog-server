@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const { DateTime } = require('luxon');
 const HTTPStatus = require('http-status');
 const SessionModel = require('../model/session.js');
-const { verifyPassword } = require('../controller/auth');
 const { validateParameters } = require('../middleware/data.js');
+const { verifyPassword } = require('../controller/auth');
 const { successResponse, errorResponse } = require('../controller/parse.js');
 
 const sessionModel = new SessionModel();

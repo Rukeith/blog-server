@@ -79,20 +79,20 @@ module.exports = (api) => {
    *    }
    */
   api.post('/articles', verifyToken, validateParameters('post/articles'), async (ctx) => {
-    let { tags = [], coverImages = [] } = ctx.request.body;
+    let { tags = [] } = ctx.request.body;
     const {
       url,
       title,
       begins,
       content,
+      coverImages = [],
     } = ctx.request.body;
     tags = _.dropWhile([...new Set(_.map(tags, _.trim))], _.isEmpty);
-    coverImages = _.dropWhile([...new Set(_.map(coverImages, _.trim))], _.isEmpty);
     const params = {
       title,
       begins,
       content,
-      coverImages,
+      coverImages: _.dropWhile([...new Set(_.map(coverImages, _.trim))], _.isEmpty),
     };
 
     try {
@@ -102,10 +102,9 @@ module.exports = (api) => {
           articleErrorResponse(ctx, 1000);
           return;
         }
-        params.url = url;
-      } else {
-        params.url = new Date().getTime();
       }
+
+      params.url = url || new Date().getTime();
 
       const article = await articleModel.create(params);
       if (!_.isEmpty(tags)) {
@@ -188,9 +187,9 @@ module.exports = (api) => {
       }
 
       await commentModel.create({
-        username,
         email,
         context,
+        username,
         article_id: article.id,
       });
       commentSuccessResponse(ctx, 1000);
@@ -650,11 +649,8 @@ module.exports = (api) => {
       results.forEach((value) => {
         if (_.isNil(value)) results.pop(value);
       });
-      if (_.isNil(results[0])) {
-        articleSuccessResponse(ctx, 1004);
-      } else {
-        articleSuccessResponse(ctx, 1004, HTTPStatus.OK, results);
-      }
+      if (_.isNil(results[0])) articleSuccessResponse(ctx, 1004);
+      else articleSuccessResponse(ctx, 1004, HTTPStatus.OK, results);
     } catch (error) {
       articleErrorResponse(ctx, 1007, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
@@ -734,11 +730,9 @@ module.exports = (api) => {
       results.forEach((value) => {
         if (_.isNil(value)) results.pop(value);
       });
-      if (_.isNil(results[0])) {
-        articleSuccessResponse(ctx, 1005);
-      } else {
-        articleSuccessResponse(ctx, 1005, HTTPStatus.OK, results);
-      }
+
+      if (_.isNil(results[0])) articleSuccessResponse(ctx, 1005);
+      else articleSuccessResponse(ctx, 1005, HTTPStatus.OK, results);
     } catch (error) { /* istanbul ignore next */
       articleErrorResponse(ctx, 1008, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
