@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const HTTPStatus = require('http-status');
 const SessionModel = require('../model/session.js');
-const { errorResponse } = require('../controller/parse.js');
 const { verifyToken } = require('../controller/auth.js');
+const { errorResponse } = require('../controller/parse.js');
 
 const sessionModel = new SessionModel();
 
@@ -20,9 +20,9 @@ module.exports = {
         return;
       }
 
-      const validResult = verifyToken(token);
-      if (!validResult.valid) {
-        errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1001, validResult.data]);
+      const { valid = false, data = {} } = verifyToken(token);
+      if (!valid) {
+        errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1001, data]);
         return;
       }
       await next();

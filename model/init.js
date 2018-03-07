@@ -6,8 +6,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(mongoUrl).then(
   () => console.info('MongoDB connection successful !'),
   /* istanbul ignore next */
-  err => console.error('MongoDB connection fail :', err),
+  error => console.error('MongoDB connection fail :', error),
 );
 
 module.exports = mongoose;
-

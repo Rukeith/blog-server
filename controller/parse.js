@@ -10,17 +10,10 @@ module.exports = {
    */
   successResponse: (ctx, options = []) => {
     const [status, type, file, code, data] = options;
-
     // Translate message
-    const path = `${type}${_.upperFirst(file)}`;
-    const translate = `success-${path}-${code}`;
-    let message;
+    const translate = `success-${type}${_.upperFirst(file)}-${code}`;
     /* istanbul ignore else */
-    if (process.env.NODE_ENV === 'test') {
-      message = lanUS[translate];
-    } else {
-      message = ctx.i18n.__(translate) || 'Translate message not found';
-    }
+    const message = (process.env.NODE_ENV === 'test') ? lanUS[translate] : (ctx.i18n.__(translate) || 'Translate message not found');
     ctx.status = status;
     ctx.response.body = { status, message, data };
   },
@@ -38,40 +31,33 @@ module.exports = {
    */
   errorResponse: (ctx, options = []) => {
     const [status, type, file, code, error] = options;
+
     function translateError(ttype, tfile, tcode, isExtra = false) {
       const path = `${ttype}${_.upperFirst(tfile)}`;
       const translate = `error-${path}-${tcode}`;
-      const level = errorLevel[`${path}-${tcode}`] || 'warning';
-      let message;
+      const level = errorLevel[`${path}-${tcode}`] || 'error';
       /* istanbul ignore else */
-      if (process.env.NODE_ENV === 'test') {
-        message = lanUS[translate];
-      } else {
-        message = ctx.i18n.__(translate) || 'Error code not found';
-      }
+      const message = (process.env.NODE_ENV === 'test') ? lanUS[translate] : (ctx.i18n.__(translate) || 'Error code not found');
       return isExtra ? message : [ttype, path, level, message];
     }
 
-    const [translateType, path, level, message] = translateError(type, file, code);
+    const [translateType, path, level = 'error', message] = translateError(type, file, code);
     let extra = '';
-    if (error) {
-      if (error.message) {
-        const errors = error.message.split(',');
-        if (errors.length === 3) extra = translateError(...errors, true);
-        else extra = error.message;
-      } else {
-        extra = _.toString(error);
-      }
+    if (error && error.message) {
+      const errors = error.message.split(',');
+      extra = (errors.length === 3) ? translateError(...errors, true) : error.message;
+    } else {
+      extra = _.toString(error);
     }
 
     ctx.sentryError = {
+      level,
       extra,
       status,
       message,
       req: ctx.request,
       tags: { path, type: translateType },
       fingerprint: [process.env.NODE_ENV],
-      level: level || 'error',
     };
 
     ctx.status = status;
