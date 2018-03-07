@@ -1,0 +1,72 @@
+{
+  "post/login": {
+    "username": { "type": "string" },
+    "password": { "type": "password", "min": 8 }
+  },
+  "post/articles": {
+    "title": { "type": "string" },
+    "begins": { "type": "string" },
+    "content": { "type": "string" },
+    "url": { "type": "string", "required": false },
+    "tags": { "type": "array", "itemType": "string", "required": false },
+    "coverImages": { "type": "array", "itemType": "url", "required": false }
+  },
+  "get/articles": {
+    "sortby": { "type": "string", "required": false },
+    "direct": { "type": "string", "required": false }
+  },
+  "get/articles/:articleId": {
+    "articleId": { "type": "string" }
+  },
+  "put/articles/:articleId": {
+    "articleId": { "type": "string" },
+    "url": { "type": "string", "required": false },
+    "title": { "type": "string", "required": false },
+    "content": { "type": "string", "required": false },
+    "coverImages": { "type": "array", "itemType": "url", "required": false }
+  },
+  "put/articles/:articleId/tags": {
+    "articleId": { "type": "string" },
+    "pop": { "type": "array", "itemType": "string", "required": false },
+    "push": { "type": "array", "itemType": "string", "required": false }
+  },
+  "delete/articles/:articleId": {
+    "articleId": { "type": "string" }
+  },
+  "post/articles/:articleId/comments": {
+    "articleId": { "type": "string" },
+    "username": { "type": "string" },
+    "email": { "type": "string", "required": false },
+    "context": { "type": "string" }
+  },
+  "get/articles/:articleId/comments": {
+    "sortby": { "type": "string", "required": false },
+    "direct": { "type": "string", "required": false }
+  },
+  "put/comments/:commentId": {
+    "commentId": { "type": "string" },
+    "context": { "type": "string" }
+  },
+  "delete/comments/:commentId": {
+    "commentId": { "type": "string" }
+  },
+  "post/tags" : {
+    "names": { "type": "array", "itemType": "string" }
+  },
+  "get/tags": {
+    "sortby": { "type": "string", "required": false },
+    "direct": { "type": "string", "required": false }
+  },
+  "get/tags/:tagId": {
+    "tagId": { "type": "string" },
+    "sortby": { "type": "string", "required": false },
+    "direct": { "type": "string", "required": false }
+  },
+  "patch/tags/:tagId": {
+    "tagId": { "type": "string" },
+    "name": { "type": "string", "allowEmpty": false }
+  },
+  "delete/tags/:tagId": {
+    "tagId": { "type": "string" }
+  }
+}
