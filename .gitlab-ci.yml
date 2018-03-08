@@ -7,48 +7,42 @@ cache:
   - public/
   - node_modules/
 
-variables:
-  MONGODB_URI: 'mongodb://mongo/rukeith-blog'
-
 before_script:
   - apt-get update -yq
 
 stages:
-  #  - lint
-  #  - test
+   - lint
+   - test
    - deploy
 
-# lint:
-#   image: node:latest
-#   script:
-#    - yarn
-#    - yarn lint
-#   stage: lint
+lint:
+  image: node:latest
+  script:
+   - yarn
+   - yarn lint
+  stage: lint
 
-# test:
-#   image: node:latest
-#   script:
-#    - yarn
-#    - yarn test
-#   stage: test
+test:
+  image: node:latest
+  script:
+   - yarn
+   - yarn test
+  stage: test
 
 staging:
   image: ruby:latest
   stage: deploy
   script:
     - gem install dpl
-    - env
-    - echo $HEROKU_STAGING_API_KEY
-    # - dpl --provider=heroku --app=blog-server-dev --api-key=HEROKU_STAGING_API_KEY --strategy=git
-    # - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
+    - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
   only:
     - master
 
-# production:
-#   image: ruby:latest
-#   stage: deploy
-#   script:
-#     - gem install dpl
-#     - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY --strategy=git
-#   only:
-#     - tags
+production:
+  image: ruby:latest
+  stage: deploy
+  script:
+    - gem install dpl
+    - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY --strategy=git
+  only:
+    - tags
