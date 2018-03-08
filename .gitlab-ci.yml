@@ -14,23 +14,23 @@ before_script:
   - apt-get update -yq
 
 stages:
-   - lint
-   - test
+  #  - lint
+  #  - test
    - deploy
 
-lint:
-  image: node:latest
-  script:
-   - yarn
-   - yarn lint
-  stage: lint
+# lint:
+#   image: node:latest
+#   script:
+#    - yarn
+#    - yarn lint
+#   stage: lint
 
-test:
-  image: node:latest
-  script:
-   - yarn
-   - yarn test
-  stage: test
+# test:
+#   image: node:latest
+#   script:
+#    - yarn
+#    - yarn test
+#   stage: test
 
 staging:
   image: ruby:latest
