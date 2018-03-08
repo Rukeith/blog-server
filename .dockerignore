@@ -10,3 +10,4 @@ LICENSE
 Procfile
 README.md
 yarn.lock
+*.log

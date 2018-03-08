@@ -10,3 +10,4 @@ LICENSE
 Dockerfile
 docker-compose.yml
 Jenkinsfile
+*.log
