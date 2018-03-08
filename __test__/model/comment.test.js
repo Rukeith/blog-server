@@ -23,7 +23,6 @@ describe('[Model] comment', () => {
     afterAll(() => Promise.all([Article.remove({}), Comment.remove({})]));
 
     test('Error: empty parameter', async () => {
-      expect.assertions(1);
       try {
         await commentModel.create();
       } catch (error) {
@@ -39,7 +38,6 @@ describe('[Model] comment', () => {
       };
       const comment = await commentModel.create(options);
       const commentJSON = comment.toJSON();
-      expect.assertions(7);
       expect(commentJSON).toHaveProperty('__v', 0);
       expect(commentJSON).toHaveProperty('_id');
       expect(commentJSON).toHaveProperty('article_id', options.article_id);
@@ -76,7 +74,6 @@ describe('[Model] comment', () => {
     afterEach(() => Promise.all([Article.remove({}), Comment.remove({})]));
 
     test('Error: find comment with null or undefined', async () => {
-      expect.assertions(1);
       try {
         await commentModel.find(null);
       } catch (error) {
@@ -87,7 +84,6 @@ describe('[Model] comment', () => {
     test('Success: Find one comment', async () => {
       const comment = await commentModel.find({ _id: testObj.id }, 'one');
       const commentJSON = comment.toJSON();
-      expect.assertions(7);
       expect(commentJSON).toHaveProperty('__v', 0);
       expect(commentJSON).toHaveProperty('_id');
       expect(commentJSON).toHaveProperty('article_id', options.comment.article_id);
@@ -103,7 +99,6 @@ describe('[Model] comment', () => {
       };
       const comment = await commentModel.find(testObj.id, 'idu', { $set: payload });
       const commentJSON = comment.toJSON();
-      expect.assertions(7);
       expect(commentJSON).toHaveProperty('__v', 0);
       expect(commentJSON).toHaveProperty('_id');
       expect(commentJSON).toHaveProperty('article_id', options.comment.article_id);
@@ -116,7 +111,6 @@ describe('[Model] comment', () => {
     test('Success: Find comment by id', async () => {
       const comment = await commentModel.find(testObj.id, 'id');
       const commentJSON = comment.toJSON();
-      expect.assertions(7);
       expect(commentJSON).toHaveProperty('__v', 0);
       expect(commentJSON).toHaveProperty('_id');
       expect(commentJSON).toHaveProperty('article_id', options.comment.article_id);
@@ -128,7 +122,6 @@ describe('[Model] comment', () => {
 
     test('Success: Find all comment', async () => {
       const commentList = await commentModel.find({}, 'all');
-      expect.assertions(8);
       expect(commentList).toHaveLength(1);
       commentList.forEach((comment) => {
         const commentJSON = comment.toJSON();
@@ -144,7 +137,6 @@ describe('[Model] comment', () => {
 
     test('Success: Find comment by default', async () => {
       const commentList = await commentModel.find();
-      expect.assertions(8);
       expect(commentList).toHaveLength(1);
       commentList.forEach((comment) => {
         const commentJSON = comment.toJSON();
@@ -160,7 +152,6 @@ describe('[Model] comment', () => {
 
     test('Success: Find comment with wrong type', async () => {
       const commentList = await commentModel.find({}, 'error');
-      expect.assertions(8);
       expect(commentList).toHaveLength(1);
       commentList.forEach((comment) => {
         const commentJSON = comment.toJSON();

@@ -11,6 +11,7 @@ module.exports = {
    */
   validateParameters: path => async (ctx, next) => {
     try {
+      /* istanbul ignore if */
       if (!_.has(parameterConfig, path)) {
         errorResponse(ctx, [HTTPStatus.BAD_REQUEST, 'data', 'middleware', 1000]);
         return;
@@ -18,6 +19,7 @@ module.exports = {
       ctx.verifyParams(parameterConfig[path]);
       await next();
     } catch (error) {
+      /* istanbul ignore next */
       const err = (error.code === 'INVALID_PARAM') ? JSON.stringify(error.errors) : error;
       errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'data', 'middleware', 1001, err]);
     }

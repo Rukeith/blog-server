@@ -9,7 +9,6 @@ describe('[Model] article', () => {
     afterAll(() => Article.remove({}));
 
     test('Error: empty parameter', async () => {
-      expect.assertions(1);
       try {
         await articleModel.create();
       } catch (error) {
@@ -28,7 +27,6 @@ describe('[Model] article', () => {
       };
       const article = await articleModel.create(options);
       const articleJSON = article.toJSON();
-      expect.assertions(11);
       expect(articleJSON).toHaveProperty('__v', 0);
       expect(articleJSON).toHaveProperty('_id');
       expect(articleJSON).toHaveProperty('title', options.title);
@@ -61,7 +59,6 @@ describe('[Model] article', () => {
     afterEach(() => Article.remove({}));
 
     test('Error: find article with null or undefined', async () => {
-      expect.assertions(1);
       try {
         await articleModel.find(null);
       } catch (error) {
@@ -72,7 +69,6 @@ describe('[Model] article', () => {
     test('Success: Find one article', async () => {
       const article = await articleModel.find({ _id: testObj.id }, 'one');
       const articleJSON = article.toJSON();
-      expect.assertions(11);
       expect(articleJSON).toHaveProperty('__v', 0);
       expect(articleJSON).toHaveProperty('_id');
       expect(articleJSON).toHaveProperty('title', options.title);
@@ -97,7 +93,6 @@ describe('[Model] article', () => {
       };
       const article = await articleModel.find(testObj.id, 'idu', { $set: payload });
       const articleJSON = article.toJSON();
-      expect.assertions(11);
       expect(articleJSON).toHaveProperty('__v', 0);
       expect(articleJSON).toHaveProperty('_id');
       expect(articleJSON).toHaveProperty('title', payload.title);
@@ -114,7 +109,6 @@ describe('[Model] article', () => {
     test('Success: Find article by id', async () => {
       const article = await articleModel.find(testObj.id, 'id');
       const articleJSON = article.toJSON();
-      expect.assertions(11);
       expect(articleJSON).toHaveProperty('__v', 0);
       expect(articleJSON).toHaveProperty('_id');
       expect(articleJSON).toHaveProperty('title', options.title);
@@ -130,7 +124,6 @@ describe('[Model] article', () => {
 
     test('Success: Find all article', async () => {
       const articleList = await articleModel.find({}, 'all');
-      expect.assertions(12);
       expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();
@@ -150,7 +143,6 @@ describe('[Model] article', () => {
 
     test('Success: Find article by default', async () => {
       const articleList = await articleModel.find();
-      expect.assertions(12);
       expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();
@@ -170,7 +162,6 @@ describe('[Model] article', () => {
 
     test('Success: Find article with wrong type', async () => {
       const articleList = await articleModel.find({}, 'error');
-      expect.assertions(12);
       expect(articleList).toHaveLength(1);
       articleList.forEach((article) => {
         const articleJSON = article.toJSON();

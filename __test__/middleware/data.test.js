@@ -1,28 +1,33 @@
+const request = require('supertest');
 const HTTPStatus = require('http-status');
+const app = require('../../index.js');
+const langUS = require('../../locales/us.json');
+const errorLevel = require('../../config/error.json');
 
-const { validateParameters } = require('../../middleware/data.js');
+describe('[Middleware] data', () => {
+  describe('validateParameters', () => {
+    test('Error: parameters is invalid', async () => {
+      const response = await request(app.callback())
+        .post('/login')
+        .send({ password: '123456' });
 
-describe.skip('[Middleware]', () => {
-  test('post/articles', async () => {
-    const ctx = {
-      begins: 'Begins',
-      content: 'Content',
-      url: 'title-artilce',
-      tags: ['tag1'],
-      coverImages: ['https://rukeith.com'],
-    };
-
-    await validateParameters('post/articles')(ctx, () => {});
-    expect(ctx).toHaveProperty('sentryError');
-    expect(ctx.sentryError).toBeInstanceOf(Object);
-    expect(ctx.sentryError).toMatchObject({
-      extra: '',
-      status: HTTPStatus.INTERNAL_SERVER_ERROR,
-      message: 'The api\'s parameters are invalid',
-      req: undefined,
-      tags: { path: 'dataMiddleware', type: 'data' },
-      fingerprint: ['test'],
-      level: 'debug',
+      const { body, status } = response;
+      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
+      expect(body).toHaveProperty('level', errorLevel['dataMiddleware-1001']);
+      expect(body).toHaveProperty('message', langUS['error-dataMiddleware-1001']);
+      expect(body).toHaveProperty('extra', JSON.stringify([
+        {
+          message: 'required',
+          field: 'username',
+          code: 'missing_field',
+        },
+        {
+          message: 'length should bigger than 8',
+          code: 'invalid',
+          field: 'password',
+        },
+      ]));
     });
   });
 });

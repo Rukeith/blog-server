@@ -733,7 +733,7 @@ module.exports = (api) => {
 
       if (_.isNil(results[0])) articleSuccessResponse(ctx, 1005);
       else articleSuccessResponse(ctx, 1005, HTTPStatus.OK, results);
-    } catch (error) { /* istanbul ignore next */
+    } catch (error) {
       articleErrorResponse(ctx, 1008, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });

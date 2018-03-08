@@ -26,7 +26,7 @@ module.exports = {
         return;
       }
       await next();
-    } catch (error) {
+    } catch (error) { /* istanbul ignore next */
       errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'auth', 'middleware', 1002, error]);
     }
   },

@@ -12,7 +12,7 @@ module.exports = {
     const [status, type, file, code, data] = options;
     // Translate message
     const translate = `success-${type}${_.upperFirst(file)}-${code}`;
-    /* istanbul ignore else */
+    /* istanbul ignore next */
     const message = (process.env.NODE_ENV === 'test') ? lanUS[translate] : (ctx.i18n.__(translate) || 'Translate message not found');
     ctx.status = status;
     ctx.response.body = { status, message, data };
@@ -36,7 +36,7 @@ module.exports = {
       const path = `${ttype}${_.upperFirst(tfile)}`;
       const translate = `error-${path}-${tcode}`;
       const level = errorLevel[`${path}-${tcode}`] || 'error';
-      /* istanbul ignore else */
+      /* istanbul ignore next */
       const message = (process.env.NODE_ENV === 'test') ? lanUS[translate] : (ctx.i18n.__(translate) || 'Error code not found');
       return isExtra ? message : [ttype, path, level, message];
     }

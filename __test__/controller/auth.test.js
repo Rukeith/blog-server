@@ -20,8 +20,8 @@ describe('[Controller] auth', () => {
 
   describe('encryptPassword', () => {
     it('encryptPassword', () => {
-      const password = `${Math.random()}`;
       const salt = `${Math.random()}`;
+      const password = `${Math.random()}`;
       expect(encryptPassword(password, salt)).toBe(_.toString(HmacSHA512(password, salt)));
     });
   });

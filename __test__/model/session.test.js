@@ -9,7 +9,6 @@ describe('[Model] session', () => {
     afterAll(() => Session.remove({}));
 
     test('Error: empty parameter', async () => {
-      expect.assertions(1);
       try {
         await sessionModel.create();
       } catch (error) {
@@ -24,7 +23,6 @@ describe('[Model] session', () => {
       };
       const session = await sessionModel.create(options);
       const sessionJSON = session.toJSON();
-      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
@@ -48,7 +46,6 @@ describe('[Model] session', () => {
     afterEach(() => Session.remove({}));
 
     test('Error: find session with null or undefined', async () => {
-      expect.assertions(1);
       try {
         await sessionModel.find(null);
       } catch (error) {
@@ -59,7 +56,6 @@ describe('[Model] session', () => {
     test('Success: Find one session', async () => {
       const session = await sessionModel.find({ _id: testObj.id }, 'one');
       const sessionJSON = session.toJSON();
-      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
@@ -74,7 +70,6 @@ describe('[Model] session', () => {
       };
       const session = await sessionModel.find(testObj.id, 'idu', { $set: payload });
       const sessionJSON = session.toJSON();
-      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
@@ -86,7 +81,6 @@ describe('[Model] session', () => {
     test('Success: Find session by id', async () => {
       const session = await sessionModel.find(testObj.id, 'id');
       const sessionJSON = session.toJSON();
-      expect.assertions(6);
       expect(sessionJSON).toHaveProperty('__v', 0);
       expect(sessionJSON).toHaveProperty('_id');
       expect(sessionJSON).toHaveProperty('token', options.token);
@@ -97,7 +91,6 @@ describe('[Model] session', () => {
 
     test('Success: Find all session', async () => {
       const sessionList = await sessionModel.find({}, 'all');
-      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
@@ -112,7 +105,6 @@ describe('[Model] session', () => {
 
     test('Success: Find session by default', async () => {
       const sessionList = await sessionModel.find();
-      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
@@ -127,7 +119,6 @@ describe('[Model] session', () => {
 
     test('Success: Find session with wrong type', async () => {
       const sessionList = await sessionModel.find({}, 'error');
-      expect.assertions(7);
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
         const sessionJSON = session.toJSON();
