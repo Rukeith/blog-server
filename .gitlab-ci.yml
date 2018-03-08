@@ -16,7 +16,7 @@ before_script:
 stages:
    - lint
    - test
-  #  - deploy
+   - deploy
 
 lint:
   image: node:latest
@@ -32,16 +32,17 @@ test:
    - yarn test
   stage: test
 
-# staging:
-#   image: ruby:latest
-#   stage: deploy
-#   script:
-#     - gem install dpl
-#     - echo $HEROKU_STAGING_API_KEY
-#     - dpl --provider=heroku --app=blog-server-dev --api-key=HEROKU_STAGING_API_KEY --strategy=git
-#     - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
-#   only:
-#     - master
+staging:
+  image: ruby:latest
+  stage: deploy
+  script:
+    - gem install dpl
+    - env
+    - echo $HEROKU_STAGING_API_KEY
+    # - dpl --provider=heroku --app=blog-server-dev --api-key=HEROKU_STAGING_API_KEY --strategy=git
+    # - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
+  only:
+    - master
 
 # production:
 #   image: ruby:latest
