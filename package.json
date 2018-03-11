@@ -34,7 +34,7 @@
     "koa-static": "^4.0.2",
     "koa-views": "^6.1.4",
     "lodash": "^4.17.5",
-    "luxon": "^0.5.3",
+    "luxon": "^0.5.5",
     "mongoose": "^5.0.9",
     "portfinder": "^1.0.13",
     "raven": "^2.4.2"
