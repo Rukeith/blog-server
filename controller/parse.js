@@ -8,7 +8,7 @@ module.exports = {
    * @param {String} ctx - koa context
    * @param {String[]} options - success parameters
    */
-  successResponse: (ctx, options = []) => {
+  successResponse(ctx, options = []) {
     const [status, type, file, code, data] = options;
     // Translate message
     const translate = `success-${type}${_.upperFirst(file)}-${code}`;
@@ -29,7 +29,7 @@ module.exports = {
    * @param {String} ctx - koa context
    * @param {String[]} options - error parameters
    */
-  errorResponse: (ctx, options = []) => {
+  errorResponse(ctx, options = []) {
     const [status, type, file, code, error] = options;
 
     function translateError(ttype, tfile, tcode, isExtra = false) {

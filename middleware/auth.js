@@ -11,7 +11,7 @@ module.exports = {
    * @name verifyToken
    * @desc check token is valid or expired
    */
-  verifyToken: async (ctx, next) => {
+  async verifyToken(ctx, next) {
     try {
       const token = ctx.headers['rukeith-token'];
       const session = await sessionModel.find({ token }, 'one');
