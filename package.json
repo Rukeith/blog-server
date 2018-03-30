@@ -45,7 +45,7 @@
     "cross-env": "^5.1.4",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-import": "^2.10.0",
     "jest": "^23.0.0-alpha.4",
     "nodemon": "^1.17.2",
     "supertest": "^3.0.0"
