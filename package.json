@@ -41,9 +41,9 @@
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
-    "babel-eslint": "^8.2.2",
+    "babel-eslint": "^8.2.3",
     "cross-env": "^5.1.4",
-    "eslint": "^5.0.0-alpha.0",
+    "eslint": "^5.0.0-alpha.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
     "jest": "^23.0.0-alpha.6r",
