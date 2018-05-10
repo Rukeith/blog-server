@@ -18,10 +18,10 @@
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "dotenv": "^5.0.1",
-    "http-status": "^1.0.1",
+    "http-status": "^1.1.0",
     "jsonwebtoken": "^8.2.1",
     "kcors": "^2.2.1",
-    "koa": "^2.5.0",
+    "koa": "^2.5.1",
     "koa-body": "^2.5.0",
     "koa-helmet": "^4.0.0",
     "koa-i18n": "^2.1.0",
@@ -33,21 +33,21 @@
     "koa-sslify": "^2.1.2",
     "koa-static": "^4.0.2",
     "koa-views": "^6.1.4",
-    "lodash": "^4.17.5",
-    "luxon": "^1.0.0",
-    "mongoose": "^5.0.14",
+    "lodash": "^4.17.10",
+    "luxon": "^1.2.0",
+    "mongoose": "^5.0.18",
     "portfinder": "^1.0.13",
-    "raven": "^2.5.0"
+    "raven": "^2.6.0"
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.2.3",
-    "cross-env": "^5.1.4",
     "eslint": "^5.0.0-alpha.1",
+    "cross-env": "^5.1.5",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
-    "jest": "^23.0.0-alpha.6r",
-    "nodemon": "^1.17.3",
+    "jest": "^23.0.0-charlie.1",
+    "nodemon": "^1.17.5-alpha.2",
     "supertest": "^3.0.0"
   }
 }
