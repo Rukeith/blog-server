@@ -8,6 +8,7 @@ const cors = require('kcors');
 const Pug = require('koa-pug');
 const Raven = require('raven');
 const i18n = require('koa-i18n');
+const winston = require('winston');
 const views = require('koa-views');
 const koaBody = require('koa-body');
 const serve = require('koa-static');
@@ -18,6 +19,24 @@ const router = require('koa-router')();
 const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
+
+const logInfo = winston.createLogger({
+  transports: [new winston.transports.Console()],
+  format: winston.format.combine(
+    winston.format.colorize({ all: true }),
+    winston.format.simple(),
+  ),
+});
+
+const log = winston.createLogger({
+  transports: [new winston.transports.Console()],
+  format: winston.format.combine(
+    winston.format.colorize({ all: true }),
+    winston.format.json(),
+    winston.format.timestamp(),
+    winston.format.prettyPrint(),
+  ),
+});
 
 const app = new Koa();
 
@@ -89,14 +108,14 @@ app.on('error', (err, ctx) => {
     /* istanbul ignore if */
     if (process.env.SENTRY_DSN) {
       Raven.captureException(err, ctx.sentryError, (sentryerr, eventId) => {
-        console.info(`Reported sentry error : ${eventId}`);
-        if (!_.isNil(sentryerr)) console.error('Sentry capture exception error =', sentryerr);
+        log.error(`Reported sentry error : ${eventId}`);
+        if (!_.isNil(sentryerr)) log.error('Sentry capture exception error =', sentryerr);
       });
     }
 
     const statusCode = ctx.status || 500;
     if (statusCode === 500) {
-      console.error(err.stack || err);
+      log.error(err.stack || err);
     }
     ctx.response.status = statusCode;
 
@@ -114,26 +133,26 @@ app.on('error', (err, ctx) => {
       message: (_.has(ctx, 'sentryError') && _.has(ctx.sentryError, 'message')) ? ctx.sentryError.message : 'unexpected error',
     };
   } catch (error) { /* istanbul ignore next */
-    console.error('Error handle fail :', error);
+    log.error('Error handle fail :', error);
   }
 });
 
 portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
 portfinder.getPortPromise().then((port) => {
   app.listen(port, () => {
-    console.info('===========================================');
-    console.info(`===== Server is running at port: ${port} =====`);
-    console.info('===========================================');
+    logInfo.info('===========================================');
+    logInfo.info(`===== Server is running at port: ${port} =====`);
+    logInfo.info('===========================================');
 
     // Caught global exception error handle
     /* istanbul ignore next */
-    process.on('uncaughtException', err => console.error('Caught exception: ', err.stack));
+    process.on('uncaughtException', err => log.error('Caught exception: ', err.stack));
     /* istanbul ignore next */
-    process.on('unhandledRejection', (reason, p) => console.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
+    process.on('unhandledRejection', (reason, p) => log.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
   });
 /* istanbul ignore next */
 }).catch((error) => { /* istanbul ignore next */
-  console.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
+  log.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
   /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'test') {
     process.exit(1);

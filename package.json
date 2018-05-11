@@ -10,7 +10,7 @@
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
   "engines": {
-    "node": ">=7.10.1"
+    "node": ">=10.0.0"
   },
   "repository": "https://github.com/Rukeith/blog-server.git",
   "author": "Rukeith <fenglan.crazydance@gmail.com>",
@@ -37,13 +37,14 @@
     "luxon": "^1.2.0",
     "mongoose": "^5.1.0",
     "portfinder": "^1.0.13",
-    "raven": "^2.6.1"
+    "raven": "^2.6.1",
+    "winston": "^3.0.0-rc5"
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.2.3",
-    "eslint": "^5.0.0-alpha.2",
     "cross-env": "^5.1.5",
+    "eslint": "^5.0.0-alpha.2",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
     "jest": "^23.0.0-charlie.1",
