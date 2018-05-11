@@ -6,7 +6,7 @@
     "start": "./node_modules/.bin/cross-env NODE_ENV=production node index.js",
     "dev": "./node_modules/.bin/cross-env NODE_ENV=development nodemon index.js",
     "test": "./node_modules/.bin/cross-env JWT_SECRET=blog jest --no-cache --forceExit --runInBand",
-    "lint": "./node_modules/.bin/eslint --quiet ./*",
+    "lint": "./node_modules/.bin/eslint --quiet .",
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },
   "engines": {
@@ -35,14 +35,14 @@
     "koa-views": "^6.1.4",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
-    "mongoose": "^5.0.18",
+    "mongoose": "^5.1.0",
     "portfinder": "^1.0.13",
-    "raven": "^2.6.0"
+    "raven": "^2.6.1"
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.2.3",
-    "eslint": "^5.0.0-alpha.1",
+    "eslint": "^5.0.0-alpha.2",
     "cross-env": "^5.1.5",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",

@@ -6,7 +6,6 @@
       "globalReturn": true, // allow return statements in the global scope
       "impliedStrict": true,  //  enable global strict mode (if ecmaVersion is 5 or greater)
       "jsx": true,  //  enable JSX
-      "experimentalObjectRestSpread": true, //  enable support for the experimental object rest/spread properties
       "allowImportExportEverywhere": true
     }
   },
