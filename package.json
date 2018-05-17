@@ -35,7 +35,7 @@
     "koa-views": "^6.1.4",
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
-    "mongoose": "^5.1.0",
+    "mongoose": "^5.1.1",
     "portfinder": "^1.0.13",
     "raven": "^2.6.1",
     "winston": "^3.0.0-rc5"
@@ -44,11 +44,11 @@
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.2.3",
     "cross-env": "^5.1.5",
-    "eslint": "^5.0.0-alpha.2",
+    "eslint": "^5.0.0-alpha.3",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
-    "jest": "^23.0.0-charlie.1",
+    "jest": "^23.0.0-charlie.2",
     "nodemon": "^1.17.5-alpha.2",
-    "supertest": "^3.0.0"
+    "supertest": "^3.1.0"
   }
 }
