@@ -11,6 +11,7 @@ const ArticleSchema = new Schema({
     type: Schema.Types.String,
   },
   content: {
+    index: true,
     required: true,
     type: Schema.Types.String,
   },

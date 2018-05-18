@@ -18,7 +18,7 @@ services:
       - blog-network
     environment:
       - NODE_ENV=test
-      - MONGODB_URI=mongodb://blog-database:27017/rukeith-blog
+      - MONGODB_URI=mongodb://blog-database:27017/rukeith-blog?retryWrites=true
       - USERNAME=rukeith
       - PASSWORD=iampassword
       - SALT=iamsalt
