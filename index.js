@@ -15,7 +15,7 @@ const serve = require('koa-static');
 const locale = require('koa-locale');
 const helmet = require('koa-helmet');
 const logger = require('koa-logger');
-const router = require('koa-router')();
+const Router = require('koa-router');
 const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
@@ -39,6 +39,7 @@ const log = winston.createLogger({
 });
 
 const app = new Koa();
+const router = new Router();
 
 /* istanbul ignore if */
 if (process.env.SENTRY_DSN) {
@@ -60,6 +61,16 @@ if (process.env.NODE_ENV === 'production') {
   app.use(enforceHttps({ trustProtoHeader: true, trustAzureHeader: true }));
 }
 
+const index = require('./route/index.js');
+const article = require('./route/article.js');
+const comment = require('./route/comment.js');
+const tag = require('./route/tag.js');
+
+index(router);
+article(router);
+comment(router);
+tag(router);
+
 app
   //  It provides important security headers to make your app more secure by default.
   .use(helmet({ noCache: true, referrerPolicy: true }))
@@ -74,8 +85,8 @@ app
   .use(koaBody())
   .use(views(__dirname, { extension: 'pug' }))
   .use(serve(path.join(__dirname, 'public')))
-  .use(router.routes())
-  .use(router.allowedMethods({ throw: true }))
+  .use(router.routes({ allowedMethods: 'throw' }))
+  // .use(router.allowedMethods({ throw: true }))
   .use(parameter(app))
   .use(i18n(app, {
     locales: ['us'],
@@ -93,15 +104,7 @@ const pug = new Pug({
 });
 pug.use(app);
 
-const index = require('./route/index.js');
-const article = require('./route/article.js');
-const comment = require('./route/comment.js');
-const tag = require('./route/tag.js');
 
-index(router);
-article(router);
-comment(router);
-tag(router);
 
 app.on('error', (err, ctx) => {
   try {
