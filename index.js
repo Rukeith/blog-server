@@ -104,8 +104,6 @@ const pug = new Pug({
 });
 pug.use(app);
 
-
-
 app.on('error', (err, ctx) => {
   try {
     /* istanbul ignore if */
