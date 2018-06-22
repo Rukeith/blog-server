@@ -5,6 +5,7 @@ const _ = require('lodash');
 const path = require('path');
 const cors = require('kcors');
 // const http2 = require('http2');
+const redis = require('redis');
 const Pug = require('koa-pug');
 const Raven = require('raven');
 const i18n = require('koa-i18n');
@@ -19,6 +20,7 @@ const Router = require('koa-router');
 const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
+const ratelimit = require('koa-ratelimit');
 const elasticsearch = require('elasticsearch');
 
 /* Setup log */
@@ -56,6 +58,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 /* Init Bonsai Elasticsearch */
+/* istanbul ignore if */
 if (process.env.BONSAI_URL) {
   const client = new elasticsearch.Client({
     host: process.env.BONSAI_URL,
@@ -80,6 +83,24 @@ locale(app);
 if (process.env.NODE_ENV === 'production') {
   // Automatically redirects to an HTTPS address
   app.use(enforceHttps({ trustProtoHeader: true, trustAzureHeader: true }));
+}
+
+/* Init rate limit */
+/* istanbul ignore if */
+if (process.env.REDIS_URL) {
+  app.use(ratelimit({
+    db: redis.createClient(process.env.REDIS_URL),
+    duration: 60000,
+    errorMessage: 'API reach limit, you need to wait for a min',
+    id(ctx) { return ctx.ip; },
+    headers: {
+      remaining: 'Rate-Limit-Remaining',
+      reset: 'Rate-Limit-Reset',
+      total: 'Rate-Limit-Total',
+    },
+    max: 30,
+    disableHeader: false,
+  }));
 }
 
 const index = require('./route/index.js');
