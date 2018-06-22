@@ -15,13 +15,6 @@ module.exports = (api) => {
   /* istanbul ignore next */
   api.get('/', ctx => ctx.render('index', { title: 'Rukeith blog backend api server' }));
 
-  /* For loader.io */
-  /* istanbul ignore next */
-  api.get('/loaderio-3141c1300546bcf7720351c28be92a28', (ctx) => {
-    ctx.response.status = 200;
-    ctx.response.body = 'loaderio-3141c1300546bcf7720351c28be92a28';
-  });
-
   api.post('/login', validateParameters('post/login'), async (ctx) => {
     const { username, password } = ctx.request.body;
     if (username !== process.env.USERNAME) {
