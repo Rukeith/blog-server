@@ -6,21 +6,22 @@ const path = require('path');
 const cors = require('kcors');
 // const http2 = require('http2');
 const redis = require('redis');
-const Pug = require('koa-pug');
 const Raven = require('raven');
+const Pug = require('koa-pug');
 const i18n = require('koa-i18n');
 const winston = require('winston');
+const Rollbar = require('rollbar');
 const views = require('koa-views');
-const koaBody = require('koa-body');
 const serve = require('koa-static');
+const koaBody = require('koa-body');
 const locale = require('koa-locale');
 const helmet = require('koa-helmet');
 const logger = require('koa-logger');
 const Router = require('koa-router');
 const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
-const enforceHttps = require('koa-sslify');
 const ratelimit = require('koa-ratelimit');
+const enforceHttps = require('koa-sslify');
 const elasticsearch = require('elasticsearch');
 
 /* Setup log */
@@ -40,6 +41,13 @@ const log = winston.createLogger({
     winston.format.prettyPrint(),
   ),
 });
+
+/* Init rollbar */
+/* istanbul ignore if */
+let rollbar;
+if (process.env.ROLLBAR_ACCESS_TOKEN) {
+  rollbar = new Rollbar(process.env.ROLLBAR_ACCESS_TOKEN);
+}
 
 const app = new Koa();
 const router = new Router();
@@ -147,6 +155,8 @@ const pug = new Pug({
 pug.use(app);
 
 app.on('error', (err, ctx) => {
+  if (rollbar) rollbar.log(err);
+
   try {
     /* istanbul ignore if */
     if (process.env.SENTRY_DSN) {
