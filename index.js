@@ -20,6 +20,7 @@ const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
 
+/* Setup log */
 const logInfo = winston.createLogger({
   transports: [new winston.transports.Console()],
   format: winston.format.combine(
@@ -27,7 +28,6 @@ const logInfo = winston.createLogger({
     winston.format.simple(),
   ),
 });
-
 const log = winston.createLogger({
   transports: [new winston.transports.Console()],
   format: winston.format.combine(
@@ -41,6 +41,7 @@ const log = winston.createLogger({
 const app = new Koa();
 const router = new Router();
 
+/* Init sentry */
 /* istanbul ignore if */
 if (process.env.SENTRY_DSN) {
   Raven.config(process.env.SENTRY_DSN, {
@@ -51,6 +52,25 @@ if (process.env.SENTRY_DSN) {
     captureUnhandledRejections: true,
     environment: process.env.NODE_ENV,
   }).install();
+}
+
+/* Init Bonsai Elasticsearch */
+if (process.env.BONSAI_URL) {
+  const client = new elasticsearch.Client({
+    host: process.env.BONSAI_URL,
+    log: 'trace',
+  });
+
+  // Test the connection:
+  // Send a HEAD request to "/" and allow
+  // up to 30 seconds for it to complete.
+  client.ping({ requestTimeout: 30000 }, (error) => {
+    if (error) {
+      log.error('Elasticsearch cluster is down!');
+    } else {
+      logInfo.info('Elasticsearch is well');
+    }
+  });
 }
 
 locale(app);
