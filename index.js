@@ -24,6 +24,9 @@ const ratelimit = require('koa-ratelimit');
 const enforceHttps = require('koa-sslify');
 const elasticsearch = require('elasticsearch');
 
+const app = new Koa();
+const router = new Router();
+
 /* Setup log */
 const logInfo = winston.createLogger({
   transports: [new winston.transports.Console()],
@@ -48,10 +51,6 @@ let rollbar;
 if (process.env.ROLLBAR_ACCESS_TOKEN) {
   rollbar = new Rollbar(process.env.ROLLBAR_ACCESS_TOKEN);
 }
-
-const app = new Koa();
-const router = new Router();
-
 /* Init sentry */
 /* istanbul ignore if */
 if (process.env.SENTRY_DSN) {
@@ -64,7 +63,6 @@ if (process.env.SENTRY_DSN) {
     environment: process.env.NODE_ENV,
   }).install();
 }
-
 /* Init Bonsai Elasticsearch */
 /* istanbul ignore if */
 if (process.env.BONSAI_URL) {
