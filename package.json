@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
+    "cross-env": "^5.2.0",
     "dotenv": "^6.0.0",
     "elasticsearch": "^15.0.0",
     "http-status": "^1.2.0",
@@ -44,7 +45,6 @@
   "devDependencies": {
     "apidoc": "^0.17.6",
     "babel-eslint": "^8.2.3",
-    "cross-env": "^5.2.0",
     "eslint": "^5.0.0-rc.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.12.0",
