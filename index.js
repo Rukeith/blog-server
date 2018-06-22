@@ -19,6 +19,7 @@ const Router = require('koa-router');
 const portfinder = require('portfinder');
 const parameter = require('koa-parameter');
 const enforceHttps = require('koa-sslify');
+const elasticsearch = require('elasticsearch');
 
 /* Setup log */
 const logInfo = winston.createLogger({
