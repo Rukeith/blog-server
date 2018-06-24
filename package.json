@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "apidoc": "^0.17.6",
-    "babel-eslint": "^8.2.4",
+    "babel-eslint": "^8.2.5",
     "eslint": "^5.0.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.12.0",
