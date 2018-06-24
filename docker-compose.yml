@@ -2,7 +2,7 @@ version: "3.5"
 services:
   mongo:
     image: mongo
-    container_name: blog-database
+    container_name: blog-mongo
     labels:
       - "CI-TEST=jenkins"
     networks:
@@ -26,7 +26,7 @@ services:
       - blog-network
     environment:
       - NODE_ENV=test
-      - MONGODB_URI=mongodb://blog-database:27017/rukeith-blog
+      - MONGODB_URI=mongodb://blog-mongo:27017/rukeith-blog
       - REDIS_URL=redis://blog-redis:6379
       - USERNAME=rukeith
       - PASSWORD=iampassword

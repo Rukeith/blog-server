@@ -102,7 +102,7 @@ app.use(ratelimit({
     reset: 'Rate-Limit-Reset',
     total: 'Rate-Limit-Total',
   },
-  max: 30,
+  max: 100,
   disableHeader: false,
 }));
 
