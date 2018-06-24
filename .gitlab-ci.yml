@@ -1,5 +1,6 @@
 services:
   - mongo:latest
+  - redis:latest
 
 cache:
   paths:
@@ -32,17 +33,18 @@ test:
 staging:
   image: ruby:latest
   stage: deploy
+  only:
+    - master
   script:
     - gem install dpl
     - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
-  only:
-    - master
+
 
 production:
   image: ruby:latest
   stage: deploy
+  only:
+    - tags
   script:
     - gem install dpl
     - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY --strategy=git
-  only:
-    - tags
