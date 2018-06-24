@@ -92,22 +92,19 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 /* Init rate limit */
-/* istanbul ignore if */
-if (process.env.REDIS_URL) {
-  app.use(ratelimit({
-    db: redis.createClient(process.env.REDIS_URL),
-    duration: 60000,
-    errorMessage: 'API reach limit, you need to wait for a min',
-    id(ctx) { return ctx.ip; },
-    headers: {
-      remaining: 'Rate-Limit-Remaining',
-      reset: 'Rate-Limit-Reset',
-      total: 'Rate-Limit-Total',
-    },
-    max: 30,
-    disableHeader: false,
-  }));
-}
+app.use(ratelimit({
+  db: redis.createClient(process.env.REDIS_URL || 'redis://localhost:6379'),
+  duration: 60000,
+  errorMessage: 'API reach limit, you need to wait for a min',
+  id(ctx) { return ctx.ip; },
+  headers: {
+    remaining: 'Rate-Limit-Remaining',
+    reset: 'Rate-Limit-Reset',
+    total: 'Rate-Limit-Total',
+  },
+  max: 30,
+  disableHeader: false,
+}));
 
 const index = require('./route/index.js');
 const article = require('./route/article.js');

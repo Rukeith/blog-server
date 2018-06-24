@@ -8,6 +8,14 @@ services:
     networks:
       - blog-network
 
+  redis:
+    image: redis
+    container_name: blog-redis
+    labels:
+      - "CT-TEST=jenkins"
+    networks:
+      - blog-network
+
   server:
     build: ./
     image: backend
@@ -19,6 +27,7 @@ services:
     environment:
       - NODE_ENV=test
       - MONGODB_URI=mongodb://blog-database:27017/rukeith-blog
+      - REDIS_URL=redis://blog-redis:6379
       - USERNAME=rukeith
       - PASSWORD=iampassword
       - SALT=iamsalt
@@ -26,6 +35,7 @@ services:
       - JWT_SECRET=blog
     depends_on:
       - mongo
+      - redis
 
 networks:
   blog-network:

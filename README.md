@@ -11,10 +11,12 @@ For code quality, I use eslint and jest with gitlab ci and jenkins to run auto t
 
 ## Required
 * Node >= 7.10.1
-* MongoDB (I use mLab to be my MongoDB)
-* Sentry (Use for catch api error)
+* MongoDB (mLab)
+* Redis (Heroku Redis)
 
 ## Environment Varaiable
+
+### Required
 * `PORT` : default is 3000
 * `NOED_ENV` : `yarn start` is production and `yarn dev` is development
 * `MONGODB_URI` : default is localhost
@@ -22,7 +24,12 @@ For code quality, I use eslint and jest with gitlab ci and jenkins to run auto t
 * `PASSWORD` : password
 * `SALT` : salt for password
 * `JWT_SECRET` : jwt's secret
-* `SENTRY_DSN` : optional
+* `REDIS_URL` : Redis url for rate limit
+
+### Optional
+* `SENTRY_DSN` : Token for sentry
+* `ROLLBAR_ACCESS_TOKEN` : Token for Rollbar
+* `BONSAI_URL` : Bonsai ElasticSearch URL
 
 ## DevOps
 * Jest
