@@ -1,4 +1,5 @@
 {
+	"index-1000": "fatal",
 	"authMiddleware-1000": "error",
 	"authMiddleware-1001": "error",
 	"authMiddleware-1002": "error",

@@ -14,18 +14,28 @@ const Rollbar = require('rollbar');
 const views = require('koa-views');
 const serve = require('koa-static');
 const koaBody = require('koa-body');
+const mongoose = require('mongoose');
 const locale = require('koa-locale');
 const helmet = require('koa-helmet');
 const logger = require('koa-logger');
 const Router = require('koa-router');
 const portfinder = require('portfinder');
+const HTTPStatus = require('http-status');
 const parameter = require('koa-parameter');
 const ratelimit = require('koa-ratelimit');
 const enforceHttps = require('koa-sslify');
 const elasticsearch = require('elasticsearch');
+const { errorResponse } = require('./controller/parse.js');
 
 const app = new Koa();
 const router = new Router();
+router.use((ctx, next) => {
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  if (mongoose.connection.readyStat !== 3 && process.env.NODE_ENV !== 'test') {
+    return errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'index', '', 1000]);
+  }
+  return next();
+});
 
 /* Setup log */
 const logInfo = winston.createLogger({
@@ -92,19 +102,24 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 /* Init rate limit */
-app.use(ratelimit({
-  db: redis.createClient(process.env.REDIS_URL || 'redis://localhost:6379'),
-  duration: 60000,
-  errorMessage: 'API reach limit, you need to wait for a min',
-  id(ctx) { return ctx.ip; },
-  headers: {
-    remaining: 'Rate-Limit-Remaining',
-    reset: 'Rate-Limit-Reset',
-    total: 'Rate-Limit-Total',
-  },
-  max: 100,
-  disableHeader: false,
-}));
+const client = redis.createClient(process.env.REDIS_URL || 'redis://localhost:6379');
+client.on('connect', () => {
+  app.use(ratelimit({
+    db: client,
+    duration: 60000,
+    errorMessage: 'API reach limit, you need to wait for a min',
+    id(ctx) { return ctx.ip; },
+    headers: {
+      remaining: 'Rate-Limit-Remaining',
+      reset: 'Rate-Limit-Reset',
+      total: 'Rate-Limit-Total',
+    },
+    max: 100,
+    disableHeader: false,
+  }));
+});
+
+client.on('error', err => log.error('Redis connecting failed !!!', err));
 
 const index = require('./route/index.js');
 const article = require('./route/article.js');
@@ -131,7 +146,6 @@ app
   .use(views(__dirname, { extension: 'pug' }))
   .use(serve(path.join(__dirname, 'public')))
   .use(router.routes({ allowedMethods: 'throw' }))
-  // .use(router.allowedMethods({ throw: true }))
   .use(parameter(app))
   .use(i18n(app, {
     locales: ['us'],
