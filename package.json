@@ -5,7 +5,7 @@
   "scripts": {
     "start": "./node_modules/.bin/cross-env NODE_ENV=production node index.js",
     "dev": "./node_modules/.bin/cross-env NODE_ENV=development nodemon index.js",
-    "test": "./node_modules/.bin/cross-env JWT_SECRET=blog jest --no-cache --forceExit --runInBand --detectOpenHandles",
+    "test": "./node_modules/.bin/cross-env JWT_SECRET=blog jest --coverage --no-cache --forceExit --runInBand",
     "lint": "./node_modules/.bin/eslint --quiet .",
     "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
   },

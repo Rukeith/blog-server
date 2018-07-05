@@ -13,7 +13,6 @@ module.exports = {
     '<rootDir>/jest.config.js/',
     '<rootDir>/node_modules/',
   ],
-  coverageReporters: ['lcov', 'text', 'text-summary'],
   coverageThreshold: {
     global: {
       lines: 90,
