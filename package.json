@@ -51,8 +51,8 @@
     "eslint": "^5.1.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",
-    "jest": "^23.4.0",
-    "nodemon": "^1.18.2-alpha.1",
+    "jest": "^23.4.1",
+    "nodemon": "^1.18.2",
     "supertest": "^3.1.0"
   }
 }
