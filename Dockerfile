@@ -1,6 +1,5 @@
 FROM node
 LABEL CI-TEST="jenkins"
-ADD ./ /blog-server
-WORKDIR /blog-server
+COPY . .
 RUN yarn
 CMD yarn test
