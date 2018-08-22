@@ -42,7 +42,6 @@ staging:
     - gem install dpl
     - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
 
-
 production:
   image: ruby:latest
   stage: deploy
@@ -50,7 +49,7 @@ production:
     - tags
   environment:
     name: production
-    url: https://blog-server-dev.herokuapp.com
+    url: https://blog-server-prod.herokuapp.com
   script:
     - gem install dpl
     - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY --strategy=git

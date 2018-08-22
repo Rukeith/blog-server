@@ -5,6 +5,7 @@ services:
     container_name: blog-mongo
     labels:
       - "CI-TEST=jenkins"
+      - "PLATFORM=blog"
     networks:
       - blog-network
 
@@ -22,6 +23,7 @@ services:
     container_name: blog-server
     labels:
       - "CI-TEST=jenkins"
+      - "PLATFORM=blog"
     networks:
       - blog-network
     environment:
@@ -41,4 +43,5 @@ networks:
   blog-network:
     labels:
       - "CI-TEST=jenkins"
+      - "PLATFORM=blog"
     name: blog-network

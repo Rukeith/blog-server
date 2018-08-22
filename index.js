@@ -31,7 +31,7 @@ const app = new Koa();
 const router = new Router();
 router.use((ctx, next) => {
   // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-  if (mongoose.connection.readyStat !== 3 && process.env.NODE_ENV !== 'test') {
+  if (mongoose.connection.readyState !== 1 && process.env.NODE_ENV !== 'test') {
     return errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'index', '', 1000]);
   }
   return next();
@@ -104,6 +104,7 @@ if (process.env.NODE_ENV === 'production') {
 /* Init rate limit */
 const client = redis.createClient(process.env.REDIS_URL || 'redis://localhost:6379');
 client.on('connect', () => {
+  logInfo.info('=== Redis connected ===');
   app.use(ratelimit({
     db: client,
     duration: 60000,
