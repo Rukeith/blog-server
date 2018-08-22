@@ -15,7 +15,7 @@ const logger = winston.createLogger({
 const mongoUrl = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/rukeith-blog';
 mongoose.Promise = global.Promise;
 mongoose.connect(mongoUrl).then(
-  () => logger.info('MongoDB connection successful !'),
+  () => logger.info('=== MongoDB connection successful ==='),
   /* istanbul ignore next */
   error => logger.error('MongoDB connection fail :', error),
 );
