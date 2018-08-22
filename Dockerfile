@@ -4,4 +4,4 @@ LABEL CI-TEST="jenkins" \
 COPY . blog-server
 WORKDIR blog-server
 RUN yarn cache clean && yarn
-CMD yarn start
+CMD yarn test

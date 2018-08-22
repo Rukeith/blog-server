@@ -34,7 +34,7 @@ staging:
   image: ruby:latest
   stage: deploy
   only:
-    - master
+    - develop
   environment:
     name: staging
     url: https://blog-server-dev.herokuapp.com
@@ -47,6 +47,7 @@ production:
   stage: deploy
   only:
     - tags
+    - master
   environment:
     name: production
     url: https://blog-server-prod.herokuapp.com
