@@ -18,7 +18,7 @@ For code quality, I use eslint and jest with gitlab ci and jenkins to run auto t
 
 ### Required
 * `PORT` : default is 3000
-* `NOED_ENV` : `yarn start` is production and `yarn dev` is development
+* `NODE_ENV` : `yarn start` is production and `yarn dev` is development
 * `MONGODB_URI` : default is localhost
 * `USERNAME` : username
 * `PASSWORD` : password
