@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.7"
 services:
   mongo:
     image: mongo
@@ -14,11 +14,12 @@ services:
     container_name: blog-redis
     labels:
       - "CT-TEST=jenkins"
+      - "PLATFORM=blog"
     networks:
       - blog-network
 
   server:
-    build: ./
+    build: .
     image: backend
     container_name: blog-server
     labels:
