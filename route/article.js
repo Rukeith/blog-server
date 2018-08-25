@@ -272,6 +272,8 @@ module.exports = (api) => {
         title: 1,
         begins: 1,
         createdAt: 1,
+        updatedAt: 1,
+        publishedAt: 1,
         coverImages: 1,
       },
     };
@@ -285,6 +287,8 @@ module.exports = (api) => {
         title: article.title,
         begins: article.begins,
         createdAt: article.createdAt,
+        updatedAt: article.updatedAt,
+        publishedAt: article.publishedAt,
         coverImages: article.coverImages,
       }));
       articleSuccessResponse(ctx, 1001, HTTPStatus.OK, formatArticles);
@@ -294,12 +298,12 @@ module.exports = (api) => {
   });
 
   /**
-   * @api {get} /articles/:articleId Get single article by article's id
+   * @api {get} /articles/:articleTitle Get single article by article's title
    * @apiVersion 0.1.0
    * @apiName GetArticle
    * @apiGroup Article
    * @apiPermission admin
-   * @apiDescription Get single article by article's id
+   * @apiDescription Get single article by article's title
    *
    * @apiHeader {String} Rukeith-Token Access token
    * @apiHeaderExample {json} Token-Example
@@ -310,7 +314,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleId article's id
+   * @apiParam {String} articleTitle article's title
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -340,10 +344,10 @@ module.exports = (api) => {
    *      "message": "Get single article processing failed"
    *    }
    */
-  api.get('/articles/:articleId', validateParameters('get/articles/:articleId'), async (ctx) => {
-    const { articleId } = ctx.params;
+  api.get('/articles/:articleTitle', validateParameters('get/articles/:articleTitle'), async (ctx) => {
+    const { articleTitle } = ctx.params;
     try {
-      const article = await articleModel.find(articleId, 'id');
+      const article = await articleModel.find({ title: articleTitle }, 'one');
       if (_.isNil(article)) {
         articleErrorResponse(ctx, 1003);
         return;

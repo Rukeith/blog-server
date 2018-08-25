@@ -301,6 +301,7 @@ describe('[Route] article', () => {
         expect(data).toHaveProperty('begins', TEST_ARTICLES[index].begins);
         expect(data).toHaveProperty('coverImages', []);
         expect(data).toHaveProperty('createdAt');
+        expect(data).toHaveProperty('updatedAt');
       });
     });
 
@@ -321,6 +322,7 @@ describe('[Route] article', () => {
         expect(data).toHaveProperty('title', TEST_ARTICLES[1].title);
         expect(data).toHaveProperty('begins', TEST_ARTICLES[1].begins);
         expect(data).toHaveProperty('createdAt');
+        expect(data).toHaveProperty('updatedAt');
         expect(data).toHaveProperty('coverImages', []);
       });
     });
@@ -343,6 +345,7 @@ describe('[Route] article', () => {
         expect(data).toHaveProperty('title', TEST_ARTICLES[newIndex].title);
         expect(data).toHaveProperty('begins', TEST_ARTICLES[newIndex].begins);
         expect(data).toHaveProperty('createdAt');
+        expect(data).toHaveProperty('updatedAt');
         expect(data).toHaveProperty('coverImages', []);
       });
     });
@@ -369,9 +372,9 @@ describe('[Route] article', () => {
       });
     });
 
-    test('Error: get single article with deleted article id', async () => {
+    test('Error: get single article with deleted article title', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_DELETE_ARTICLE.id}`);
+        .get(`/articles/${TEST_DELETE_ARTICLE.title}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -381,21 +384,21 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
-    test('Error: get single article with not existed article id', async () => {
+    test('Error: get single article with not existed article title', async () => {
       const response = await request(app.callback())
         .get('/articles/test');
 
       const { body, status } = response;
-      expect(status).toBe(HTTPStatus.INTERNAL_SERVER_ERROR);
-      expect(body).toHaveProperty('status', HTTPStatus.INTERNAL_SERVER_ERROR);
-      expect(body).toHaveProperty('level', errorLevel['articleApi-1004']);
-      expect(body).toHaveProperty('message', langUS['error-articleApi-1004']);
-      expect(body).toHaveProperty('extra', 'Cast to ObjectId failed for value \"test\" at path \"_id\" for model \"Article\"');
+      expect(status).toBe(HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('status', HTTPStatus.BAD_REQUEST);
+      expect(body).toHaveProperty('level', errorLevel['articleApi-1003']);
+      expect(body).toHaveProperty('message', langUS['error-articleApi-1003']);
+      expect(body).toHaveProperty('extra', '');
     });
 
     test('Success: get single article', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_ARTICLE.id}`);
+        .get(`/articles/${TEST_ARTICLE.title}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);

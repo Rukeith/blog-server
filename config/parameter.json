@@ -15,8 +15,8 @@
     "sortby": { "type": "string", "required": false },
     "direct": { "type": "string", "required": false }
   },
-  "get/articles/:articleId": {
-    "articleId": { "type": "string" }
+  "get/articles/:articleTitle": {
+    "articleTitle": { "type": "string" }
   },
   "put/articles/:articleId": {
     "articleId": { "type": "string" },
