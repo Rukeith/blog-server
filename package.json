@@ -53,6 +53,6 @@
     "eslint-plugin-import": "^2.14.0",
     "jest": "^23.5.0",
     "nodemon": "^1.18.4",
-    "supertest": "^3.1.0"
+    "supertest": "^3.3.0"
   }
 }
