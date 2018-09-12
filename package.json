@@ -23,7 +23,7 @@
     "http-status": "^1.2.0",
     "jsonwebtoken": "^8.3.0",
     "kcors": "^2.2.2",
-    "koa": "^2.5.2",
+    "koa": "^2.5.3",
     "koa-body": "^4.0.4",
     "koa-helmet": "^4.0.0",
     "koa-i18n": "^2.1.0",
@@ -42,7 +42,7 @@
     "portfinder": "^1.0.17",
     "raven": "^2.6.4",
     "redis": "^2.8.0",
-    "rollbar": "^2.4.5",
+    "rollbar": "^2.4.6",
     "winston": "^3.1.0"
   },
   "devDependencies": {
