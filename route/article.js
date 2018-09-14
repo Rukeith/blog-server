@@ -264,10 +264,9 @@ module.exports = (api) => {
     let {
       offset = 0,
       limit = 10,
-      fields = '',
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', fields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -281,16 +280,14 @@ module.exports = (api) => {
     const options = {
       sort,
       limit,
+      select: {},
       skip: offset,
     };
 
     if (!_.isEmpty(fields)) {
-      fields = fields.split(',');
-      const select = {};
-      fields.forEach((value) => {
-        select[value] = 1;
+      fields.split(',').forEach((value) => {
+        options.select[value] = 1;
       });
-      options.select = select;
     }
 
     try {
@@ -356,9 +353,8 @@ module.exports = (api) => {
 
     try {
       if (!_.isEmpty(fields)) {
-        const splitFields = fields.split(',');
         select = {};
-        splitFields.forEach((value) => {
+        fields.split(',').forEach((value) => {
           select[value] = 1;
         });
       }
@@ -430,10 +426,9 @@ module.exports = (api) => {
     let {
       offset = 0,
       limit = 10,
-      fields = '',
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', fields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -447,16 +442,14 @@ module.exports = (api) => {
     const options = {
       sort,
       limit,
+      select: {},
       skip: offset,
     };
 
     if (!_.isEmpty(fields)) {
-      fields = fields.split(',');
-      const select = {};
-      fields.forEach((value) => {
-        select[value] = 1;
+      fields.split(',').forEach((value) => {
+        options.select[value] = 1;
       });
-      options.select = select;
     }
 
     try {

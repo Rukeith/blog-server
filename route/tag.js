@@ -100,6 +100,7 @@ module.exports = (api) => {
    * @apiParam {Number} [offset=0] start query tags at which number
    * @apiParam {String} [direct='desc'] sort is desc or asc
    * @apiParam {String} [sortby='createdAt'] sort data by which field
+   * @apiParam {String} [articleFields='title',url] specific articles' fields
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -135,7 +136,7 @@ module.exports = (api) => {
       limit = 100,
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', articleFields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -152,15 +153,18 @@ module.exports = (api) => {
 
     const populate = {
       path: 'articles',
-      options: { sort: { createdAt: 'desc' } },
-      select: {
-        url: 1,
-        title: 1,
-        begins: 1,
-        createdAt: 1,
-        coverImages: 1,
+      options: {
+        deletedAt: {
+          $exists: false,
+        },
       },
+      select: {},
     };
+    if (!_.isEmpty(articleFields)) {
+      articleFields.split(',').forEach((value) => {
+        populate.select[value] = 1;
+      });
+    }
 
     try {
       const tags = await tagModel.find({}, 'all', options, populate);
@@ -169,13 +173,7 @@ module.exports = (api) => {
         name: tag.name,
         articles: {
           amount: tag.articles.length,
-          content: _.map(tag.articles, article => ({
-            id: article.id,
-            url: article.url,
-            title: article.title,
-            begins: article.begins,
-            coverImages: article.coverImages,
-          })),
+          content: tag.articles,
         },
       }));
       tagSuccessResponse(ctx, 1001, HTTPStatus.OK, formatTags);
@@ -207,6 +205,7 @@ module.exports = (api) => {
    * @apiParam {Number} [limit=10] the article's limit
    * @apiParam {String} [direct='desc'] sort is desc or asc
    * @apiParam {String} [sortby='createdAt'] sort data by which field
+   * @apiParam {String} [articleFields='title',url] specific articles' fields
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -243,7 +242,7 @@ module.exports = (api) => {
       limit = 100,
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', articleFields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -261,14 +260,14 @@ module.exports = (api) => {
     const populate = {
       path: 'articles',
       options,
-      select: {
-        url: 1,
-        title: 1,
-        begins: 1,
-        createdAt: 1,
-        coverImages: 1,
-      },
+      select: {},
     };
+
+    if (!_.isEmpty(articleFields)) {
+      articleFields.split(',').forEach((value) => {
+        populate.select[value] = 1;
+      });
+    }
 
     try {
       const tag = await tagModel.find(tagId, 'id', {}, populate);
@@ -282,15 +281,7 @@ module.exports = (api) => {
         name: tag.name,
         createdAt: tag.createdAt,
         updatedAt: tag.updatedAt,
-        articles: _.map(tag.articles, article => ({
-          id: article.id,
-          url: article.url,
-          title: article.title,
-          begins: article.begins,
-          createdAt: tag.createdAt,
-          updatedAt: tag.updatedAt,
-          coverImages: article.coverImages,
-        })),
+        articles: tag.articles,
       };
       tagSuccessResponse(ctx, 1002, HTTPStatus.OK, formatTag);
     } catch (error) {

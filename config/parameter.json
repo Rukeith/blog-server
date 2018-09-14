@@ -67,12 +67,14 @@
   },
   "get/tags": {
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "articleFields": { "type": "string", "required": false }
   },
   "get/tags/:tagId": {
     "tagId": { "type": "string" },
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "articleFields": { "type": "string", "required": false }
   },
   "patch/tags/:tagId": {
     "tagId": { "type": "string" },

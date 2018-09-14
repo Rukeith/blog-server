@@ -21,6 +21,7 @@ describe('[Route] comment', () => {
       title: `jest-test-title-${now}`,
       begins: `jest-test-begins-${now}`,
       content: `jest-test-content-${now}`,
+      category: `jest-test-category-${now}`,
     });
     TEST_COMMENT = await Comment.create({
       article_id: TEST_ARTICLE.id,

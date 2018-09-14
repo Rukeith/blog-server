@@ -20,11 +20,12 @@ For code quality, I use eslint and jest with gitlab ci and jenkins to run auto t
 * `PORT` : default is 3000
 * `NODE_ENV` : `yarn start` is production and `yarn dev` is development
 * `MONGODB_URI` : default is localhost
+* `REDIS_URL` : Redis url for rate limit
 * `USERNAME` : username
 * `PASSWORD` : password
 * `SALT` : salt for password
-* `JWT_SECRET` : jwt's secret
-* `REDIS_URL` : Redis url for rate limit
+* `JWT_SECRET` : jwt secret
+* `ISSUER` : jwt issuer
 
 ### Optional
 * `SENTRY_DSN` : Token for sentry
