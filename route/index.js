@@ -28,7 +28,7 @@ module.exports = (api) => {
     }
 
     const expiredAt = DateTime.local().plus({ minutes: 30 }).toJSDate();
-    const token = jwt.sign({ ip: ctx.request.ip }, Buffer.from(process.env.JWT_SECRET), { expiresIn: '30m', issuer: 'rukeith' });
+    const token = jwt.sign({ ip: ctx.request.ip }, Buffer.from(process.env.JWT_SECRET), { expiresIn: '30m', issuer: process.env.ISSUER });
 
     try {
       await sessionModel.create({ token, expiredAt });
