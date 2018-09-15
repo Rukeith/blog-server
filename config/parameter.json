@@ -19,8 +19,8 @@
     "direct": { "type": "string", "required": false },
     "fields": { "type": "string", "required": false }
   },
-  "get/articles/:articleTitle": {
-    "articleTitle": { "type": "string" },
+  "get/articles/:articleUrl": {
+    "articleUrl": { "type": "string" },
     "fields": { "type": "string", "required": false }
   },
   "put/articles/:articleId": {

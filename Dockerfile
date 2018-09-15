@@ -1,6 +1,6 @@
 FROM node
 LABEL CI-TEST="jenkins" \
-      PLATFORM="blog"
+      PROJECT="blog"
 COPY . blog-server
 WORKDIR blog-server
 RUN yarn cache clean && yarn

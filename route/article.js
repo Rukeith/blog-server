@@ -299,7 +299,7 @@ module.exports = (api) => {
   });
 
   /**
-   * @api {get} /articles/:articleTitle Get single article by article's title
+   * @api {get} /articles/:articleUrl Get single article by article's title
    * @apiVersion 0.1.0
    * @apiName GetArticle
    * @apiGroup Article
@@ -315,7 +315,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleTitle article's title
+   * @apiParam {String} articleUrl article's url
    * @apiParam {Number} [fields=title,begins] specific data's fields
    *
    * @apiSuccess {Number} status HTTP Status code
@@ -346,10 +346,10 @@ module.exports = (api) => {
    *      "message": "Get single article processing failed"
    *    }
    */
-  api.get('/articles/:articleTitle', validateParameters('get/articles/:articleTitle'), async (ctx) => {
+  api.get('/articles/:articleUrl', validateParameters('get/articles/:articleUrl'), async (ctx) => {
     let select;
     const { fields = '' } = ctx.query;
-    const { articleTitle } = ctx.params;
+    const { articleUrl } = ctx.params;
 
     try {
       if (!_.isEmpty(fields)) {
@@ -359,7 +359,7 @@ module.exports = (api) => {
         });
       }
 
-      const article = await articleModel.find({ title: articleTitle }, 'one', {}, select);
+      const article = await articleModel.find({ url: articleUrl }, 'one', {}, select);
       if (_.isNil(article)) {
         articleErrorResponse(ctx, 1003);
         return;
@@ -711,7 +711,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleId true is publishe and false is unpublish
+   * @apiParam {String} articleId true is publish and false is unpublish
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message

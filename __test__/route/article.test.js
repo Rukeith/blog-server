@@ -386,9 +386,9 @@ describe('[Route] article', () => {
       });
     });
 
-    test('Error: get single article with deleted article title', async () => {
+    test('Error: get single article with deleted article url', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_DELETE_ARTICLE.title}`);
+        .get(`/articles/${TEST_DELETE_ARTICLE.url}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -398,7 +398,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
-    test('Error: get single article with not existed article title', async () => {
+    test('Error: get single article with not existed article url', async () => {
       const response = await request(app.callback())
         .get('/articles/test');
 
@@ -412,7 +412,7 @@ describe('[Route] article', () => {
 
     test('Success: get single article with fields', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_ARTICLE.title}`)
+        .get(`/articles/${TEST_ARTICLE.url}`)
         .query({ fields: '_id,url,title' });
 
       const { body, status } = response;
