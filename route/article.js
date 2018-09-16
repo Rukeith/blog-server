@@ -299,12 +299,12 @@ module.exports = (api) => {
   });
 
   /**
-   * @api {get} /articles/:articleUrl Get single article by article's title
+   * @api {get} /articles/:filterValue Get single article by article's id or url
    * @apiVersion 0.1.0
    * @apiName GetArticle
    * @apiGroup Article
    * @apiPermission admin
-   * @apiDescription Get single article by article's title
+   * @apiDescription Get single article by article's id or url
    *
    * @apiHeader {String} Rukeith-Token Access token
    * @apiHeaderExample {json} Token-Example
@@ -315,7 +315,8 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleUrl article's url
+   * @apiParam {String} filterValue article's url
+   * @apiParam {String} [filterType] values are url, id default is url
    * @apiParam {Number} [fields=title,begins] specific data's fields
    *
    * @apiSuccess {Number} status HTTP Status code
@@ -346,10 +347,10 @@ module.exports = (api) => {
    *      "message": "Get single article processing failed"
    *    }
    */
-  api.get('/articles/:articleUrl', validateParameters('get/articles/:articleUrl'), async (ctx) => {
+  api.get('/articles/:filterValue', validateParameters('get/articles/:filterValue'), async (ctx) => {
     let select;
-    const { fields = '' } = ctx.query;
-    const { articleUrl } = ctx.params;
+    const { fields = '', filterKey = 'url' } = ctx.query;
+    const { filterValue } = ctx.params;
 
     try {
       if (!_.isEmpty(fields)) {
@@ -359,7 +360,13 @@ module.exports = (api) => {
         });
       }
 
-      const article = await articleModel.find({ url: articleUrl }, 'one', {}, select);
+      let article;
+      if (filterKey === 'id') {
+        article = await articleModel.find(filterValue, 'id', {}, select);
+      } else if (filterKey === 'url') {
+        article = await articleModel.find({ url: filterValue }, 'one', {}, select);
+      }
+
       if (_.isNil(article)) {
         articleErrorResponse(ctx, 1003);
         return;
@@ -552,7 +559,7 @@ module.exports = (api) => {
 
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
-        if (existArticle) {
+        if (existArticle.id !== articleId) {
           articleErrorResponse(ctx, 1000);
           return;
         }

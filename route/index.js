@@ -37,4 +37,25 @@ module.exports = (api) => {
       indexErrorResponse(ctx, 1002, HTTPStatus.INTERNAL_SERVER_ERROR);
     }
   });
+
+  api.post('/logout', validateParameters('post/logout'), async (ctx) => {
+    const { token } = ctx.request.body;
+    if (!verifyPassword(token)) {
+      indexErrorResponse(ctx, 1003, HTTPStatus.UNAUTHORIZED);
+      return;
+    }
+
+    try {
+      const session = await sessionModel.find({ token }, 'one');
+      if (!verifyPassword(session)) {
+        indexErrorResponse(ctx, 1003, HTTPStatus.UNAUTHORIZED);
+        return;
+      }
+
+      await sessionModel.find(session._id, 'idu', { deletedAt: new Date() });
+      indexSuccessResponse(ctx, 1001, HTTPStatus.ACCEPTED, { token });
+    } catch (error) { /* istanbul ignore next */
+      indexErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR);
+    }
+  });
 };
