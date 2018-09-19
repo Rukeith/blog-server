@@ -169,20 +169,25 @@ describe('[Route] tag', () => {
       });
     });
 
-    test('Success: query tags with article', async () => {
+    test('Success: query tags with article and articleFields option', async () => {
+      const timestamp = DateTime.local().valueOf();
       const article = await Article.create({
-        title: `jest-test-title-${DateTime.local().valueOf()}`,
-        begins: `jest-test-begins-${DateTime.local().valueOf()}`,
-        content: `jest-test-content-${DateTime.local().valueOf()}`,
-        url: `jest-test-url-${DateTime.local().valueOf()}`,
+        url: `jest-test-url-${timestamp}`,
+        title: `jest-test-title-${timestamp}`,
+        begins: `jest-test-begins-${timestamp}`,
+        content: `jest-test-content-${timestamp}`,
+        category: `jest-test-category-${timestamp}`,
       });
       TEST_TAGS[0].articles.addToSet(article.id);
-      await TEST_TAGS[0].save();
       TEST_TAGS[1].articles.addToSet(article.id);
-      await TEST_TAGS[1].save();
+      await Promise.all([
+        TEST_TAGS[0].save(),
+        TEST_TAGS[1].save(),
+      ]);
+
       const response = await request(app.callback())
         .get('/tags')
-        .query({ direct: 'asc' });
+        .query({ direct: 'asc', articleFields: '_id,url,title' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -190,7 +195,6 @@ describe('[Route] tag', () => {
       expect(body).toHaveProperty('message', langUS['success-tagApi-1001']);
       expect(body).toHaveProperty('data');
       expect(body.data).toHaveLength(2);
-
       _.forEach(body.data, (data, index) => {
         expect(data).toHaveProperty('id', TEST_TAGS[index].id);
         expect(data).toHaveProperty('name', TEST_TAGS[index].name);
@@ -200,11 +204,11 @@ describe('[Route] tag', () => {
         expect(data.articles.content).toHaveLength(1);
 
         _.forEach(data.articles.content, (content) => {
-          expect(content).toHaveProperty('id', article.id);
+          expect(content).toHaveProperty('_id', article.id);
           expect(content).toHaveProperty('url', article.url);
           expect(content).toHaveProperty('title', article.title);
-          expect(content).toHaveProperty('begins', article.begins);
-          expect(content).toHaveProperty('coverImages', []);
+          expect(content).not.toHaveProperty('begins');
+          expect(content).not.toHaveProperty('coverImages');
         });
       });
     });
@@ -219,17 +223,19 @@ describe('[Route] tag', () => {
       TEST_ARTICLES = [];
       const now = DateTime.local().valueOf();
       const article1 = await Article.create({
-        title: `jest-test-title-${now}`,
-        content: `jest-test-content-${now}`,
         url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_ARTICLES.push(article1);
       const article2 = await Article.create({
-        title: `jest-test-title-${now + 1}`,
-        content: `jest-test-content-${now + 1}`,
         url: `jest-test-url-${now + 1}`,
+        title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
+        content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
       TEST_ARTICLES.unshift(article2);
       TEST_TAG = await Tag.create({ name: `jest-test-${now}`, articles: [article1.id, article2.id] });
@@ -243,7 +249,7 @@ describe('[Route] tag', () => {
 
     test('Error: get single tag with deleted tag id', async () => {
       const response = await request(app.callback())
-        .get(`/tags/${TEST_DELETE_TAG.id}`);
+        .get(`/tags/${TEST_DELETE_TAG._id}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -282,7 +288,7 @@ describe('[Route] tag', () => {
       expect(body.data.articles).toHaveLength(2);
 
       _.forEach(body.data.articles, (article, index) => {
-        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).toHaveProperty('_id', TEST_ARTICLES[index].id);
         expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
         expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
         expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);
@@ -300,6 +306,7 @@ describe('[Route] tag', () => {
           offset: 1,
           direct: 'asc',
           sortby: 'createdAt',
+          articleFields: 'url,title',
         });
 
       const { body, status } = response;
@@ -315,13 +322,13 @@ describe('[Route] tag', () => {
       expect(body.data.articles).toHaveLength(1);
 
       _.forEach(body.data.articles, (article, index) => {
-        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).not.toHaveProperty('begins');
+        expect(article).not.toHaveProperty('createdAt');
+        expect(article).not.toHaveProperty('updatedAt');
+        expect(article).not.toHaveProperty('coverImages');
+        expect(article).toHaveProperty('_id');
         expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
         expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
-        expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);
-        expect(article).toHaveProperty('coverImages', []);
-        expect(article).toHaveProperty('createdAt');
-        expect(article).toHaveProperty('updatedAt');
       });
     });
 
@@ -347,7 +354,7 @@ describe('[Route] tag', () => {
       expect(body.data.articles).toHaveLength(2);
 
       _.forEach(body.data.articles, (article, index) => {
-        expect(article).toHaveProperty('id', TEST_ARTICLES[index].id);
+        expect(article).toHaveProperty('_id', TEST_ARTICLES[index].id);
         expect(article).toHaveProperty('url', TEST_ARTICLES[index].url);
         expect(article).toHaveProperty('title', TEST_ARTICLES[index].title);
         expect(article).toHaveProperty('begins', TEST_ARTICLES[index].begins);

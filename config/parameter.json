@@ -8,21 +8,31 @@
     "begins": { "type": "string" },
     "content": { "type": "string" },
     "url": { "type": "string", "required": false },
+    "category": { "type": "array", "itemType": "string" },
     "tags": { "type": "array", "itemType": "string", "required": false },
     "coverImages": { "type": "array", "itemType": "url", "required": false }
   },
   "get/articles": {
+    "limit": { "type": "string", "required": false},
+    "offset": { "type": "string", "required": false},
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "fields": { "type": "string", "required": false }
   },
-  "get/articles/:articleTitle": {
-    "articleTitle": { "type": "string" }
+  "get/articles/:filterValue": {
+    "filterValue": { "type": "string" },
+    "fields": { "type": "string", "required": false },
+    "filterType": { "type": "string", "required": false }
   },
   "put/articles/:articleId": {
     "articleId": { "type": "string" },
     "url": { "type": "string", "required": false },
     "title": { "type": "string", "required": false },
+    "begins": { "type": "string", "required": false },
     "content": { "type": "string", "required": false },
+    "pageView": { "type": "int", "required": false, "min": 0, "max": 1 },
+    "likeCount": { "type": "int", "required": false, "min": 0, "max": 1 },
+    "category": { "type": "array", "itemType": "string", "required": false },
     "coverImages": { "type": "array", "itemType": "url", "required": false }
   },
   "put/articles/:articleId/tags": {
@@ -40,8 +50,11 @@
     "context": { "type": "string" }
   },
   "get/articles/:articleId/comments": {
+    "limit": { "type": "string", "required": false},
+    "offset": { "type": "string", "required": false},
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "fields": { "type": "string", "required": false }
   },
   "put/comments/:commentId": {
     "commentId": { "type": "string" },
@@ -55,12 +68,14 @@
   },
   "get/tags": {
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "articleFields": { "type": "string", "required": false }
   },
   "get/tags/:tagId": {
     "tagId": { "type": "string" },
     "sortby": { "type": "string", "required": false },
-    "direct": { "type": "string", "required": false }
+    "direct": { "type": "string", "required": false },
+    "articleFields": { "type": "string", "required": false }
   },
   "patch/tags/:tagId": {
     "tagId": { "type": "string" },

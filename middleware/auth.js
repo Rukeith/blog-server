@@ -22,6 +22,7 @@ module.exports = {
 
       const { valid = false, data = {} } = verifyToken(token);
       if (!valid) {
+        await sessionModel.find(session._id, 'idu', { deletedAt: new Date() });
         errorResponse(ctx, [HTTPStatus.UNAUTHORIZED, 'auth', 'middleware', 1001, data]);
         return;
       }

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const ArticleSchema = new Schema({
   title: {
+    index: true,
     required: true,
     type: Schema.Types.String,
   },
@@ -19,6 +20,21 @@ const ArticleSchema = new Schema({
     index: true,
     required: true,
     type: Schema.Types.String,
+  },
+  category: {
+    index: true,
+    required: true,
+    type: Schema.Types.String,
+  },
+  pageView: {
+    default: 0,
+    index: true,
+    type: Schema.Types.Number,
+  },
+  likeCount: {
+    default: 0,
+    index: true,
+    type: Schema.Types.Number,
   },
   coverImages: [Schema.Types.String],
   publishedAt: Schema.Types.Date,

@@ -37,6 +37,7 @@ module.exports = (api) => {
    * @apiParam {String} title article's title
    * @apiParam {String} content article's content
    * @apiParam {String} begins article's first sentence
+   * @apiParam {String} category article's category
    * @apiParam {String} [url] article's url and this should be unique
    * @apiParam {String[]} [tags] an array of tags' id which this article will reference to
    * @apiParam {String[]} [coverImages] an array of photos' url
@@ -44,7 +45,8 @@ module.exports = (api) => {
    *    {
    *      "title": "JavaScript builds everything",
    *      "content": "I love it",
-   *      "begins": "This is my first article's first sentence"
+   *      "begins": "This is my first article's first sentence",
+   *      "category": [ "javascript", "nodejs" ],
    *      "url": "javascript-builds-everything",
    *      "tags": [ "507f1f77bcf86cd799439011" ],
    *      "coverImages": [ "https://www.google.com" ]
@@ -79,23 +81,29 @@ module.exports = (api) => {
    *    }
    */
   api.post('/articles', verifyToken, validateParameters('post/articles'), async (ctx) => {
-    let { tags = [] } = ctx.request.body;
+    let { tags = [], category = [], coverImages = [] } = ctx.request.body;
     const {
       url,
       title,
       begins,
       content,
-      coverImages = [],
     } = ctx.request.body;
+
+    // Check values did not duplicate
     tags = _.dropWhile([...new Set(_.map(tags, _.trim))], _.isEmpty);
+    category = _.dropWhile([...new Set(_.map(category, _.trim))], _.isEmpty);
+    coverImages = _.dropWhile([...new Set(_.map(coverImages, _.trim))], _.isEmpty);
+
     const params = {
       title,
       begins,
       content,
-      coverImages: _.dropWhile([...new Set(_.map(coverImages, _.trim))], _.isEmpty),
+      category: category.join('>'),
+      coverImages,
     };
 
     try {
+      // Check url is unique
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
         if (existArticle) {
@@ -104,14 +112,16 @@ module.exports = (api) => {
         }
       }
 
+      // If url is empty get a default value then create article
       params.url = url || new Date().getTime();
-
       const article = await articleModel.create(params);
+
+      // Join tags with article
       if (!_.isEmpty(tags)) {
         tags = await Promise.all(_.map(tags, tagId => tagModel.find(tagId, 'id')));
         tags = _.dropWhile(tags, _.isEmpty);
-        const options = { $addToSet: { articles: article.id } };
-        await Promise.all(_.map(tags, tag => tagModel.find(tag.id, 'idu', options)));
+        const options = { $addToSet: { articles: article._id } };
+        await Promise.all(_.map(tags, tag => tagModel.find(tag._id, 'idu', options)));
       }
       articleSuccessResponse(ctx, 1000, HTTPStatus.CREATED);
     } catch (error) {
@@ -190,7 +200,7 @@ module.exports = (api) => {
         email,
         context,
         username,
-        article_id: article.id,
+        article_id: article._id,
       });
       commentSuccessResponse(ctx, 1000);
     } catch (error) {
@@ -216,6 +226,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
+   * @apiParam {Number} [fields=title,begins] specific data's fields
    * @apiParam {Number} [limit=10] the limit of query amount
    * @apiParam {Number} [offset=0] start query tags at which number
    * @apiParam {String} [direct='desc'] sort is desc or asc
@@ -255,7 +266,7 @@ module.exports = (api) => {
       limit = 10,
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', fields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -263,47 +274,37 @@ module.exports = (api) => {
     if (limit > 10 || limit < 0) limit = 10;
     if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
 
+    const sort = {};
+    sort[sortby] = direct;
+
     const options = {
+      sort,
       limit,
-      sort: {},
+      select: {},
       skip: offset,
-      select: {
-        url: 1,
-        title: 1,
-        begins: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        publishedAt: 1,
-        coverImages: 1,
-      },
     };
-    options.sort[sortby] = direct;
+
+    if (!_.isEmpty(fields)) {
+      fields.split(',').forEach((value) => {
+        options.select[value] = 1;
+      });
+    }
 
     try {
       const articles = await articleModel.find({}, 'all', options);
-      const formatArticles = _.map(articles, article => ({
-        id: article.id,
-        url: article.url,
-        title: article.title,
-        begins: article.begins,
-        createdAt: article.createdAt,
-        updatedAt: article.updatedAt,
-        publishedAt: article.publishedAt,
-        coverImages: article.coverImages,
-      }));
-      articleSuccessResponse(ctx, 1001, HTTPStatus.OK, formatArticles);
+      articleSuccessResponse(ctx, 1001, HTTPStatus.OK, articles);
     } catch (error) { /* istanbul ignore next */
       articleErrorResponse(ctx, 1002, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
   });
 
   /**
-   * @api {get} /articles/:articleTitle Get single article by article's title
+   * @api {get} /articles/:filterValue Get single article by article's id or url
    * @apiVersion 0.1.0
    * @apiName GetArticle
    * @apiGroup Article
    * @apiPermission admin
-   * @apiDescription Get single article by article's title
+   * @apiDescription Get single article by article's id or url
    *
    * @apiHeader {String} Rukeith-Token Access token
    * @apiHeaderExample {json} Token-Example
@@ -314,7 +315,9 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleTitle article's title
+   * @apiParam {String} filterValue article's url
+   * @apiParam {String} [filterType] values are url, id default is url
+   * @apiParam {Number} [fields=title,begins] specific data's fields
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message
@@ -344,25 +347,31 @@ module.exports = (api) => {
    *      "message": "Get single article processing failed"
    *    }
    */
-  api.get('/articles/:articleTitle', validateParameters('get/articles/:articleTitle'), async (ctx) => {
-    const { articleTitle } = ctx.params;
+  api.get('/articles/:filterValue', validateParameters('get/articles/:filterValue'), async (ctx) => {
+    let select;
+    const { fields = '', filterKey = 'url' } = ctx.query;
+    const { filterValue } = ctx.params;
+
     try {
-      const article = await articleModel.find({ title: articleTitle }, 'one');
+      if (!_.isEmpty(fields)) {
+        select = {};
+        fields.split(',').forEach((value) => {
+          select[value] = 1;
+        });
+      }
+
+      let article;
+      if (filterKey === 'id') {
+        article = await articleModel.find(filterValue, 'id', {}, select);
+      } else if (filterKey === 'url') {
+        article = await articleModel.find({ url: filterValue }, 'one', {}, select);
+      }
+
       if (_.isNil(article)) {
         articleErrorResponse(ctx, 1003);
         return;
       }
-
-      const formatArticle = {
-        id: article.id,
-        url: article.url,
-        title: article.title,
-        begins: article.begins,
-        content: article.content,
-        createdAt: article.createdAt,
-        updatedAt: article.updatedAt,
-      };
-      articleSuccessResponse(ctx, 1002, HTTPStatus.OK, formatArticle);
+      articleSuccessResponse(ctx, 1002, HTTPStatus.OK, article);
     } catch (error) {
       articleErrorResponse(ctx, 1004, HTTPStatus.INTERNAL_SERVER_ERROR, error);
     }
@@ -385,6 +394,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
+   * @apiParam {Number} [fields=title,begins] specific data's fields
    * @apiParam {Number} [limit=10] the limit of query amount
    * @apiParam {Number} [offset=0] start query tags at which number
    * @apiParam {String} [direct='desc'] sort is desc or asc
@@ -425,7 +435,7 @@ module.exports = (api) => {
       limit = 10,
       direct = 'desc',
     } = ctx.query;
-    const { sortby = 'createdAt' } = ctx.query;
+    const { sortby = 'createdAt', fields = '' } = ctx.query;
 
     if (!_.isInteger(offset)) offset = _.toInteger(offset);
     if (offset < 0) offset = 0;
@@ -433,17 +443,21 @@ module.exports = (api) => {
     if (limit > 10 || limit < 0) limit = 10;
     if (direct !== 'desc' && direct !== 'asc') direct = 'desc';
 
+    const sort = {};
+    sort[sortby] = direct;
+
     const options = {
+      sort,
       limit,
-      sort: {},
+      select: {},
       skip: offset,
-      select: {
-        username: 1,
-        context: 1,
-        createdAt: 1,
-      },
     };
-    options.sort[sortby] = direct;
+
+    if (!_.isEmpty(fields)) {
+      fields.split(',').forEach((value) => {
+        options.select[value] = 1;
+      });
+    }
 
     try {
       const article = await articleModel.find(articleId, 'id');
@@ -452,8 +466,7 @@ module.exports = (api) => {
         return;
       }
 
-      let comments = await commentModel.find({ article_id: articleId }, 'all', options);
-      comments = _.map(comments, value => Object.assign({}, value.toJSON(), { id: value._id }));
+      const comments = await commentModel.find({ article_id: articleId }, 'all', options);
       commentSuccessResponse(ctx, 1001, HTTPStatus.OK, comments);
     } catch (error) {
       commentErrorResponse(ctx, 1001, HTTPStatus.INTERNAL_SERVER_ERROR, error);
@@ -479,14 +492,20 @@ module.exports = (api) => {
    *
    * @apiParam {String} [title] article's title
    * @apiParam {String} [content] article's content
-   * @apiParam {String[]} [coverImages] an array of photos' url
    * @apiParam {String} [url] article's url and this should be unique
+   * @apiParam {String} [category] article's category
+   * @apiParam {String} [pageView] article's pageView
+   * @apiParam {String} [likeCount] article's like
+   * @apiParam {String[]} [coverImages] an array of photos' url
    * @apiParamExample {params} Create-Tags
    *    {
    *      "title": "JavaScript builds everything",
    *      "content": "I love it",
    *      "url": "javascript-builds-everything",
-   *      "coverImages": [ "https://www.google.com" ]
+   *      "coverImages": [ "https://www.google.com" ],
+   *      "category": [ "frontend", "reactjs", "nextjs" ],
+   *      "pageView": 1,
+   *      "likeCount": 1
    *    }
    *
    * @apiSuccess {Number} status HTTP Status code
@@ -519,7 +538,13 @@ module.exports = (api) => {
    */
   api.put('/articles/:articleId', verifyToken, validateParameters('put/articles/:articleId'), async (ctx) => {
     const { articleId } = ctx.params;
-    const { url, ...options } = ctx.request.body;
+    const {
+      url,
+      category,
+      pageView = 0,
+      likeCount = 0,
+      ...options
+    } = ctx.request.body;
     if (_.isEmpty(url) && _.isEmpty(options)) {
       articleErrorResponse(ctx, 1005);
       return;
@@ -534,14 +559,30 @@ module.exports = (api) => {
 
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
-        if (existArticle) {
+        if (existArticle.id !== articleId) {
           articleErrorResponse(ctx, 1000);
           return;
         }
         options.url = url;
       }
+      if (!_.isEmpty(category)) options.category = category.join('>');
 
-      await articleModel.find(articleId, 'idu', options);
+      const params = {
+        $set: options,
+      };
+
+      if (pageView > 0) {
+        params.$inc = { pageView: 1 };
+      }
+      if (likeCount > 0) {
+        if (_.has(params, '$inc')) {
+          params.$inc.likeCount = 1;
+        } else {
+          params.$inc = { likeCount: 1 };
+        }
+      }
+
+      await articleModel.find(articleId, 'idu', params);
       articleSuccessResponse(ctx, 1003);
     } catch (error) {
       articleErrorResponse(ctx, 1006, HTTPStatus.INTERNAL_SERVER_ERROR, error);
@@ -625,7 +666,7 @@ module.exports = (api) => {
           const pushPromise = new Promise(async (resolve) => {
             try {
               const tag = await tagModel.find(tagId, 'id');
-              await tagModel.find(tag.id, 'idu', { $push: { articles: articleId } });
+              await tagModel.find(tag._id, 'idu', { $push: { articles: articleId } });
               return resolve();
             } catch (error) {
               return resolve(`Server Error: tag ${tagId} is not existed`);
@@ -639,7 +680,7 @@ module.exports = (api) => {
           const pullPromise = new Promise(async (resolve) => {
             try {
               const tag = await tagModel.find(tagId, 'id');
-              await tagModel.find(tag.id, 'idu', { $pull: { articles: articleId } });
+              await tagModel.find(tag._id, 'idu', { $pull: { articles: articleId } });
               return resolve();
             } catch (error) {
               return resolve(`Server Error: tag ${tagId} is not existed`);
@@ -677,7 +718,7 @@ module.exports = (api) => {
    *        x3aQQOcF4JM30sUSWjUUpiy8BoXq7QYwnG9y8w0BgZc"
    *    }
    *
-   * @apiParam {String} articleId true is publishe and false is unpublish
+   * @apiParam {String} articleId true is publish and false is unpublish
    *
    * @apiSuccess {Number} status HTTP Status code
    * @apiSuccess {String} message Info message

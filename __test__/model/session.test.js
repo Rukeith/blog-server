@@ -22,13 +22,12 @@ describe('[Model] session', () => {
         expiredAt: DateTime.local().plus({ minutes: 30 }).toJSDate(),
       };
       const session = await sessionModel.create(options);
-      const sessionJSON = session.toJSON();
-      expect(sessionJSON).toHaveProperty('__v', 0);
-      expect(sessionJSON).toHaveProperty('_id');
-      expect(sessionJSON).toHaveProperty('token', options.token);
-      expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(sessionJSON).toHaveProperty('createdAt');
-      expect(sessionJSON).toHaveProperty('updatedAt');
+      expect(session).toHaveProperty('__v', 0);
+      expect(session).toHaveProperty('_id');
+      expect(session).toHaveProperty('token', options.token);
+      expect(session).toHaveProperty('expiredAt');
+      expect(session).toHaveProperty('createdAt');
+      expect(session).toHaveProperty('updatedAt');
     });
   });
 
@@ -55,13 +54,12 @@ describe('[Model] session', () => {
 
     test('Success: Find one session', async () => {
       const session = await sessionModel.find({ _id: testObj.id }, 'one');
-      const sessionJSON = session.toJSON();
-      expect(sessionJSON).toHaveProperty('__v', 0);
-      expect(sessionJSON).toHaveProperty('_id');
-      expect(sessionJSON).toHaveProperty('token', options.token);
-      expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(sessionJSON).toHaveProperty('createdAt');
-      expect(sessionJSON).toHaveProperty('updatedAt');
+      expect(session).toHaveProperty('__v', 0);
+      expect(session).toHaveProperty('_id');
+      expect(session).toHaveProperty('token', options.token);
+      expect(session).toHaveProperty('expiredAt');
+      expect(session).toHaveProperty('createdAt');
+      expect(session).toHaveProperty('updatedAt');
     });
 
     test('Success: Find session by id and update session expiredAt', async () => {
@@ -69,37 +67,34 @@ describe('[Model] session', () => {
         expiredAt: DateTime.local().plus({ minutes: 30 }).toJSDate(),
       };
       const session = await sessionModel.find(testObj.id, 'idu', { $set: payload });
-      const sessionJSON = session.toJSON();
-      expect(sessionJSON).toHaveProperty('__v', 0);
-      expect(sessionJSON).toHaveProperty('_id');
-      expect(sessionJSON).toHaveProperty('token', options.token);
-      expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(sessionJSON).toHaveProperty('createdAt');
-      expect(sessionJSON).toHaveProperty('updatedAt');
+      expect(session).toHaveProperty('__v', 0);
+      expect(session).toHaveProperty('_id');
+      expect(session).toHaveProperty('token', options.token);
+      expect(session).toHaveProperty('expiredAt');
+      expect(session).toHaveProperty('createdAt');
+      expect(session).toHaveProperty('updatedAt');
     });
 
     test('Success: Find session by id', async () => {
       const session = await sessionModel.find(testObj.id, 'id');
-      const sessionJSON = session.toJSON();
-      expect(sessionJSON).toHaveProperty('__v', 0);
-      expect(sessionJSON).toHaveProperty('_id');
-      expect(sessionJSON).toHaveProperty('token', options.token);
-      expect(sessionJSON).toHaveProperty('expiredAt');
-      expect(sessionJSON).toHaveProperty('createdAt');
-      expect(sessionJSON).toHaveProperty('updatedAt');
+      expect(session).toHaveProperty('__v', 0);
+      expect(session).toHaveProperty('_id');
+      expect(session).toHaveProperty('token', options.token);
+      expect(session).toHaveProperty('expiredAt');
+      expect(session).toHaveProperty('createdAt');
+      expect(session).toHaveProperty('updatedAt');
     });
 
     test('Success: Find all session', async () => {
       const sessionList = await sessionModel.find({}, 'all');
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
-        const sessionJSON = session.toJSON();
-        expect(sessionJSON).toHaveProperty('__v', 0);
-        expect(sessionJSON).toHaveProperty('_id');
-        expect(sessionJSON).toHaveProperty('token', options.token);
-        expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(sessionJSON).toHaveProperty('createdAt');
-        expect(sessionJSON).toHaveProperty('updatedAt');
+        expect(session).toHaveProperty('__v', 0);
+        expect(session).toHaveProperty('_id');
+        expect(session).toHaveProperty('token', options.token);
+        expect(session).toHaveProperty('expiredAt');
+        expect(session).toHaveProperty('createdAt');
+        expect(session).toHaveProperty('updatedAt');
       });
     });
 
@@ -107,13 +102,12 @@ describe('[Model] session', () => {
       const sessionList = await sessionModel.find();
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
-        const sessionJSON = session.toJSON();
-        expect(sessionJSON).toHaveProperty('__v', 0);
-        expect(sessionJSON).toHaveProperty('_id');
-        expect(sessionJSON).toHaveProperty('token', options.token);
-        expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(sessionJSON).toHaveProperty('createdAt');
-        expect(sessionJSON).toHaveProperty('updatedAt');
+        expect(session).toHaveProperty('__v', 0);
+        expect(session).toHaveProperty('_id');
+        expect(session).toHaveProperty('token', options.token);
+        expect(session).toHaveProperty('expiredAt');
+        expect(session).toHaveProperty('createdAt');
+        expect(session).toHaveProperty('updatedAt');
       });
     });
 
@@ -121,13 +115,12 @@ describe('[Model] session', () => {
       const sessionList = await sessionModel.find({}, 'error');
       expect(sessionList).toHaveLength(1);
       sessionList.forEach((session) => {
-        const sessionJSON = session.toJSON();
-        expect(sessionJSON).toHaveProperty('__v', 0);
-        expect(sessionJSON).toHaveProperty('_id');
-        expect(sessionJSON).toHaveProperty('token', options.token);
-        expect(sessionJSON).toHaveProperty('expiredAt');
-        expect(sessionJSON).toHaveProperty('createdAt');
-        expect(sessionJSON).toHaveProperty('updatedAt');
+        expect(session).toHaveProperty('__v', 0);
+        expect(session).toHaveProperty('_id');
+        expect(session).toHaveProperty('token', options.token);
+        expect(session).toHaveProperty('expiredAt');
+        expect(session).toHaveProperty('createdAt');
+        expect(session).toHaveProperty('updatedAt');
       });
     });
   });

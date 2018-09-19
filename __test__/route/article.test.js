@@ -46,6 +46,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
 
       const newTime = DateTime.local().valueOf();
@@ -57,6 +58,7 @@ describe('[Route] article', () => {
           title: `jest-test-title-${newTime}`,
           begins: `jest-test-begins-${newTime}`,
           content: `jest-test-content-${newTime}`,
+          category: [`jest-test-category-${newTime}`],
         });
 
       const { body, status } = response;
@@ -73,10 +75,11 @@ describe('[Route] article', () => {
         .post('/articles')
         .set('Rukeith-Token', token)
         .send({
+          tags: ['test'],
           title: `jest-test-title-${now}`,
           begins: `jest-test-begins-${now}`,
           content: `jest-test-content-${now}`,
-          tags: ['test'],
+          category: [`jest-test-category-${now}`],
           coverImages: ['https://www.google.com'],
         });
 
@@ -134,17 +137,18 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('extra', 'invalid signature');
     });
 
-    test('Success: create article with url is default, tag and coverImages have duplicate values', async () => {
+    test('Success: create article with url is default, tag, category and coverImages have duplicate values', async () => {
       let tag = await Tag.create({ name: `jest-test-${DateTime.local().valueOf()}` });
       const now = DateTime.local().valueOf();
       const response = await request(app.callback())
         .post('/articles')
         .set('Rukeith-Token', token)
         .send({
+          tags: [tag.id, tag.id],
           title: `jest-test-title-${now}`,
           begins: `jest-test-begins-${now}`,
           content: `jest-test-content-${now}`,
-          tags: [tag.id, tag.id],
+          category: [`jest-test-category-${now}`, `jest-test-category-${now}`],
           coverImages: ['https://www.google.com', 'https://www.google.com', 'https://www.yahoo.com'],
         });
 
@@ -160,20 +164,23 @@ describe('[Route] article', () => {
       const articleJson = article.toJSON();
       expect(tagJson).toHaveProperty('articles', [article._id]);
       expect(articleJson).toHaveProperty('url');
+      expect(articleJson).toHaveProperty('category', `jest-test-category-${now}`);
       expect(articleJson).toHaveProperty('coverImages', ['https://www.google.com', 'https://www.yahoo.com']);
     });
 
     test('Success: create article with url and without tags', async () => {
       const now = DateTime.local().valueOf();
+      const options = {
+        url: `jest-test-url-${now}`,
+        title: `jest-test-title-${now}`,
+        begins: `jest-test-begins-${now}`,
+        content: `jest-test-content-${now}`,
+        category: [`jest-test-category-${now}`],
+      };
       const response = await request(app.callback())
         .post('/articles')
         .set('Rukeith-Token', token)
-        .send({
-          url: `jest-test-url-${now}`,
-          title: `jest-test-title-${now}`,
-          begins: `jest-test-begins-${now}`,
-          content: `jest-test-content-${now}`,
-        });
+        .send(options);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.CREATED);
@@ -183,10 +190,11 @@ describe('[Route] article', () => {
 
       const article = await Article.findOne({ title: { $eq: `jest-test-title-${now}` } });
       const articleJson = article.toJSON();
-      expect(articleJson).toHaveProperty('url', article.url);
-      expect(articleJson).toHaveProperty('title', article.title);
-      expect(articleJson).toHaveProperty('begins', article.begins);
-      expect(articleJson).toHaveProperty('content', article.content);
+      expect(articleJson).toHaveProperty('url', options.url);
+      expect(articleJson).toHaveProperty('title', options.title);
+      expect(articleJson).toHaveProperty('begins', options.begins);
+      expect(articleJson).toHaveProperty('content', options.content);
+      expect(articleJson).toHaveProperty('category', options.category[0]);
     });
   });
 
@@ -201,6 +209,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_DELETE_ARTICLE = await Article.create({
         deletedAt: new Date(),
@@ -208,6 +217,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 
@@ -272,12 +282,14 @@ describe('[Route] article', () => {
         title: `jest-test-title-${timestamp}`,
         begins: `jest-test-begins-${timestamp}`,
         content: `jest-test-content-${timestamp}`,
+        category: `jest-test-category-${timestamp}`,
       });
       const article2 = await Article.create({
         url: `jest-test-url-${timestamp + 1}`,
         title: `jest-test-title-${timestamp + 1}`,
         begins: `jest-test-begins-${timestamp + 1}`,
         content: `jest-test-content-${timestamp + 1}`,
+        category: `jest-test-category-${timestamp + 1}`,
       });
       TEST_ARTICLES.push(article2);
       TEST_ARTICLES.push(article1);
@@ -295,8 +307,8 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('data');
       expect(body.data).toHaveLength(2);
       _.forEach(body.data, (data, index) => {
-        expect(data).toHaveProperty('id', TEST_ARTICLES[index].id);
-        expect(data).toHaveProperty('url');
+        expect(data).toHaveProperty('_id', TEST_ARTICLES[index].id);
+        expect(data).toHaveProperty('url', TEST_ARTICLES[index].url);
         expect(data).toHaveProperty('title', TEST_ARTICLES[index].title);
         expect(data).toHaveProperty('begins', TEST_ARTICLES[index].begins);
         expect(data).toHaveProperty('coverImages', []);
@@ -317,7 +329,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('data');
       expect(body.data).toHaveLength(1);
       _.forEach(body.data, (data) => {
-        expect(data).toHaveProperty('id', TEST_ARTICLES[1].id);
+        expect(data).toHaveProperty('_id', TEST_ARTICLES[1].id);
         expect(data).toHaveProperty('url', TEST_ARTICLES[1].url);
         expect(data).toHaveProperty('title', TEST_ARTICLES[1].title);
         expect(data).toHaveProperty('begins', TEST_ARTICLES[1].begins);
@@ -327,10 +339,10 @@ describe('[Route] article', () => {
       });
     });
 
-    test('Success: query tags with sortby and direct', async () => {
+    test('Success: query tags with sortby, direct and fields', async () => {
       const response = await request(app.callback())
         .get('/articles')
-        .query({ sortby: 'createdAt', direct: 'asc' });
+        .query({ sortby: 'createdAt', direct: 'asc', fields: '_id,url' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -340,13 +352,13 @@ describe('[Route] article', () => {
       expect(body.data).toHaveLength(2);
       _.forEach(body.data, (data, index) => {
         const newIndex = (index === 0) ? 1 : 0;
-        expect(data).toHaveProperty('id', TEST_ARTICLES[newIndex].id);
+        expect(data).toHaveProperty('_id', TEST_ARTICLES[newIndex].id);
         expect(data).toHaveProperty('url', TEST_ARTICLES[newIndex].url);
-        expect(data).toHaveProperty('title', TEST_ARTICLES[newIndex].title);
-        expect(data).toHaveProperty('begins', TEST_ARTICLES[newIndex].begins);
-        expect(data).toHaveProperty('createdAt');
-        expect(data).toHaveProperty('updatedAt');
-        expect(data).toHaveProperty('coverImages', []);
+        expect(data).not.toHaveProperty('title');
+        expect(data).not.toHaveProperty('begins');
+        expect(data).not.toHaveProperty('createdAt');
+        expect(data).not.toHaveProperty('updatedAt');
+        expect(data).not.toHaveProperty('coverImages');
       });
     });
   });
@@ -362,6 +374,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_DELETE_ARTICLE = await Article.create({
         deletedAt: new Date(),
@@ -369,12 +382,13 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 
-    test('Error: get single article with deleted article title', async () => {
+    test('Error: get single article with deleted article url', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_DELETE_ARTICLE.title}`);
+        .get(`/articles/${TEST_DELETE_ARTICLE.url}`);
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.BAD_REQUEST);
@@ -384,7 +398,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
-    test('Error: get single article with not existed article title', async () => {
+    test('Error: get single article with not existed article url', async () => {
       const response = await request(app.callback())
         .get('/articles/test');
 
@@ -396,22 +410,24 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('extra', '');
     });
 
-    test('Success: get single article', async () => {
+    test('Success: get single article with fields', async () => {
       const response = await request(app.callback())
-        .get(`/articles/${TEST_ARTICLE.title}`);
+        .get(`/articles/${TEST_ARTICLE.url}`)
+        .query({ fields: '_id,url,title' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-articleApi-1002']);
       expect(body).toHaveProperty('data');
-      expect(body.data).toHaveProperty('id', TEST_ARTICLE.id);
+      expect(body.data).toHaveProperty('_id', TEST_ARTICLE.id);
       expect(body.data).toHaveProperty('url', TEST_ARTICLE.url);
       expect(body.data).toHaveProperty('title', TEST_ARTICLE.title);
-      expect(body.data).toHaveProperty('begins', TEST_ARTICLE.begins);
-      expect(body.data).toHaveProperty('content', TEST_ARTICLE.content);
-      expect(body.data).toHaveProperty('createdAt');
-      expect(body.data).toHaveProperty('updatedAt');
+      expect(body.data).not.toHaveProperty('begins');
+      expect(body.data).not.toHaveProperty('content');
+      expect(body.data).not.toHaveProperty('category');
+      expect(body.data).not.toHaveProperty('createdAt');
+      expect(body.data).not.toHaveProperty('updatedAt');
     });
   });
 
@@ -428,6 +444,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_DELETE_ARTICLE = await Article.create({
         deletedAt: new Date(),
@@ -435,6 +452,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
       const commentObj1 = await Comment.create({
         article_id: TEST_ARTICLE.id,
@@ -486,7 +504,7 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('data');
       expect(body.data).toHaveLength(2);
       _.forEach(body.data, (data, index) => {
-        expect(data).toHaveProperty('id', TEST_COMMENTS[index].id);
+        expect(data).toHaveProperty('_id', TEST_COMMENTS[index].id);
         expect(data).toHaveProperty('context', TEST_COMMENTS[index].context);
         expect(data).toHaveProperty('username', TEST_COMMENTS[index].username);
         expect(data).toHaveProperty('createdAt');
@@ -505,17 +523,17 @@ describe('[Route] article', () => {
       expect(body).toHaveProperty('data');
       expect(body.data).toHaveLength(1);
       _.forEach(body.data, (data) => {
-        expect(data).toHaveProperty('id', TEST_COMMENTS[1].id);
+        expect(data).toHaveProperty('_id', TEST_COMMENTS[1].id);
         expect(data).toHaveProperty('context', TEST_COMMENTS[1].context);
         expect(data).toHaveProperty('username', TEST_COMMENTS[1].username);
         expect(data).toHaveProperty('createdAt');
       });
     });
 
-    test('Success: query comments with sortby and direct', async () => {
+    test('Success: query comments with sortby, direct and fields', async () => {
       const response = await request(app.callback())
         .get(`/articles/${TEST_ARTICLE.id}/comments`)
-        .query({ sortby: 'createdAt', direct: 'asc' });
+        .query({ sortby: 'createdAt', direct: 'asc', fields: '_id,username' });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -525,11 +543,10 @@ describe('[Route] article', () => {
       expect(body.data).toHaveLength(2);
       _.forEach(body.data, (data, index) => {
         const newIndex = (index === 0) ? 1 : 0;
-        expect(data).toHaveProperty('id', TEST_COMMENTS[newIndex].id);
-        expect(data).toHaveProperty('context', TEST_COMMENTS[newIndex].context);
+        expect(data).toHaveProperty('_id', TEST_COMMENTS[newIndex].id);
         expect(data).toHaveProperty('username', TEST_COMMENTS[newIndex].username);
-        expect(data).toHaveProperty('createdAt');
-        expect(data).toHaveProperty('createdAt');
+        expect(data).not.toHaveProperty('context');
+        expect(data).not.toHaveProperty('createdAt');
       });
     });
   });
@@ -545,6 +562,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_DELETE_ARTICLE = await Article.create({
         deletedAt: new Date(),
@@ -552,6 +570,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 
@@ -589,6 +608,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
 
       const response = await request(app.callback())
@@ -623,7 +643,7 @@ describe('[Route] article', () => {
       const response = await request(app.callback())
         .put(`/articles/${TEST_ARTICLE.id}`)
         .set('Rukeith-Token', token)
-        .send({ title: articleTitle });
+        .send({ title: articleTitle, likeCount: 1 });
 
       const { body, status } = response;
       expect(status).toBe(HTTPStatus.OK);
@@ -634,6 +654,7 @@ describe('[Route] article', () => {
       const article = await Article.findById(TEST_ARTICLE.id);
       const articleJson = article.toJSON();
       expect(articleJson).toHaveProperty('title', articleTitle);
+      expect(articleJson).toHaveProperty('likeCount', 1);
       expect(articleJson.createdAt).not.toBe(articleJson.updatedAt);
     });
 
@@ -670,6 +691,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
 
       TEST_PUSH_TAG = await Tag.create({
@@ -683,6 +705,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 
@@ -806,6 +829,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
 
       TEST_UNPUBLISH_ARTICLE = await Article.create({
@@ -813,6 +837,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 
@@ -866,6 +891,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now}`,
         begins: `jest-test-begins-${now}`,
         content: `jest-test-content-${now}`,
+        category: `jest-test-category-${now}`,
       });
       TEST_DELETE_ARTICLE = await Article.create({
         deletedAt: new Date(),
@@ -873,6 +899,7 @@ describe('[Route] article', () => {
         title: `jest-test-title-${now + 1}`,
         begins: `jest-test-begins-${now + 1}`,
         content: `jest-test-content-${now + 1}`,
+        category: `jest-test-category-${now + 1}`,
       });
     });
 

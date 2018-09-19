@@ -19,7 +19,7 @@ module.exports = class CommonModel {
     return this.model.create(options);
   }
 
-  find(queries = {}, type = 'all', options = {}) {
+  find(queries = {}, type = 'all', options = {}, fields = null) {
     if (_.isNil(queries)) {
       throw new Error([this.collection, 'model', 1001]);
     }
@@ -27,17 +27,17 @@ module.exports = class CommonModel {
     let promise;
     switch (type) {
       case 'one':
-        promise = this.model.findOne(queries).exists('deletedAt', false);
+        promise = this.model.findOne(queries, fields, options).exists('deletedAt', false).lean();
         break;
       case 'idu':
-        promise = this.model.findByIdAndUpdate(queries, options, { new: true, runValidators: true });
+        promise = this.model.findByIdAndUpdate(queries, options, { select: fields, new: true, runValidators: true }).lean();
         break;
       case 'id':
-        promise = this.model.findById(queries, null, options).exists('deletedAt', false);
+        promise = this.model.findById(queries, fields, options).exists('deletedAt', false).lean();
         break;
-      default:
       case 'all':
-        promise = this.model.find(queries, null, options).exists('deletedAt', false);
+      default:
+        promise = this.model.find(queries, fields, options).exists('deletedAt', false).lean();
         break;
     }
 

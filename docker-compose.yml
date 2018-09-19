@@ -5,7 +5,7 @@ services:
     container_name: blog-mongo
     labels:
       - "CI-TEST=jenkins"
-      - "PLATFORM=blog"
+      - "PROJECT=blog"
     networks:
       - blog-network
 
@@ -14,7 +14,7 @@ services:
     container_name: blog-redis
     labels:
       - "CT-TEST=jenkins"
-      - "PLATFORM=blog"
+      - "PROJECT=blog"
     networks:
       - blog-network
 
@@ -24,7 +24,7 @@ services:
     container_name: blog-server
     labels:
       - "CI-TEST=jenkins"
-      - "PLATFORM=blog"
+      - "PROJECT=blog"
     networks:
       - blog-network
     environment:
@@ -36,13 +36,14 @@ services:
       - SALT=iamsalt
       - HASH_PASSWORD=418b24c67f21cb9da47b3732a59a207e62cb9a58d368166c5c99f5dbddc6ac9c7257ad513984c733ca1f3e1718798dab066ba3965fee15429f4a4391f586d15d
       - JWT_SECRET=blog
+      - ISSUER=rukeith
     depends_on:
       - mongo
       - redis
 
 networks:
   blog-network:
+    name: blog-network
     labels:
       - "CI-TEST=jenkins"
-      - "PLATFORM=blog"
-    name: blog-network
+      - "PROJECT=blog"
