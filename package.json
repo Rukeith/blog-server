@@ -23,7 +23,7 @@
     "http-status": "^1.2.0",
     "jsonwebtoken": "^8.3.0",
     "kcors": "^2.2.2",
-    "koa": "^2.5.2",
+    "koa": "^2.6.1",
     "koa-body": "^4.0.4",
     "koa-helmet": "^4.0.0",
     "koa-i18n": "^2.1.0",
@@ -38,11 +38,11 @@
     "koa-views": "^6.1.4",
     "lodash": "^4.17.11",
     "luxon": "^1.4.4",
-    "mongoose": "^5.3.4",
-    "portfinder": "^1.0.18",
+    "mongoose": "^5.3.6",
+    "portfinder": "^1.0.19",
     "raven": "^2.6.4",
     "redis": "^2.8.0",
-    "rollbar": "^2.4.7",
+    "rollbar": "^2.5.0",
     "winston": "^3.1.0"
   },
   "devDependencies": {
@@ -51,7 +51,7 @@
     "eslint": "^5.7.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "jest": "^24.0.0-alpha.0",
+    "jest": "^24.0.0-alpha.1",
     "nodemon": "^1.18.4",
     "supertest": "^3.3.0"
   }
