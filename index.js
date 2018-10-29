@@ -1,10 +1,11 @@
 require('dotenv').config();
 require('./model/init.js');
+const fs = require('fs');
 const Koa = require('koa');
 const _ = require('lodash');
 const path = require('path');
 const cors = require('kcors');
-// const http2 = require('http2');
+const http2 = require('http2');
 const redis = require('redis');
 const Raven = require('raven');
 const Pug = require('koa-pug');
@@ -200,26 +201,37 @@ app.on('error', (err, ctx) => {
   }
 });
 
-portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
-portfinder.getPortPromise().then((port) => {
-  app.listen(port, () => {
-    logInfo.info('===========================================');
-    logInfo.info(`===== Server is running at port: ${port} =====`);
-    logInfo.info('===========================================');
+if (process.env.NODE_ENV === 'production') {
+  http2.createSecureServer(
+    {
+      allowHTTP1: true,
+      key: fs.readFileSync('./ssl.key', 'utf8'),
+      cert: fs.readFileSync('./ssl.cert', 'utf8')
+    },
+    app.callback()
+  ).listen(443);
+} else {
+  portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
+  portfinder.getPortPromise().then((port) => {
+    app.listen(port, () => {
+      logInfo.info('===========================================');
+      logInfo.info(`===== Server is running at port: ${port} =====`);
+      logInfo.info('===========================================');
 
-    // Caught global exception error handle
-    /* istanbul ignore next */
-    process.on('uncaughtException', err => log.error('Caught exception: ', err.stack));
-    /* istanbul ignore next */
-    process.on('unhandledRejection', (reason, p) => log.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
-  });
-/* istanbul ignore next */
-}).catch((error) => { /* istanbul ignore next */
-  log.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
+      // Caught global exception error handle
+      /* istanbul ignore next */
+      process.on('uncaughtException', err => log.error('Caught exception: ', err.stack));
+      /* istanbul ignore next */
+      process.on('unhandledRejection', (reason, p) => log.error('Unhandled Rejection at: Promise ', p, ' reason: ', reason.stack));
+    });
   /* istanbul ignore next */
-  if (process.env.NODE_ENV !== 'test') {
-    process.exit(1);
-  }
-});
+  }).catch((error) => { /* istanbul ignore next */
+    log.error(`=======PORT ${portfinder.basePort} has been used=======`, error);
+    /* istanbul ignore next */
+    if (process.env.NODE_ENV !== 'test') {
+      process.exit(1);
+    }
+  });
+}
 
 module.exports = app;

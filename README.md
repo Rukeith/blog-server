@@ -24,6 +24,7 @@ For code quality, I use eslint and jest with gitlab ci and jenkins to run auto t
 * `USERNAME` : username
 * `PASSWORD` : password
 * `SALT` : salt for password
+* `HASH_PASSWORD`：password hash
 * `JWT_SECRET` : jwt secret
 * `ISSUER` : jwt issuer
 

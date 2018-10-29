@@ -4,46 +4,53 @@ services:
     image: mongo
     container_name: blog-mongo
     labels:
-      - "CI-TEST=jenkins"
+      - "SERVICE=mongo"
       - "PROJECT=blog"
     networks:
       - blog-network
+    ports: 
+      - "27017:27017"
 
   redis:
     image: redis
     container_name: blog-redis
     labels:
-      - "CT-TEST=jenkins"
+      - "SERVICE=redis"
       - "PROJECT=blog"
     networks:
       - blog-network
+    ports: 
+      - "6379:6379"
 
   server:
     build: .
     image: backend
     container_name: blog-server
     labels:
-      - "CI-TEST=jenkins"
+      - "SERVICE=server"
       - "PROJECT=blog"
     networks:
       - blog-network
     environment:
-      - NODE_ENV=test
+      - PORT=443
+      - NODE_ENV=production
       - MONGODB_URI=mongodb://blog-mongo:27017/rukeith-blog
       - REDIS_URL=redis://blog-redis:6379
       - USERNAME=rukeith
       - PASSWORD=iampassword
       - SALT=iamsalt
-      - HASH_PASSWORD=418b24c67f21cb9da47b3732a59a207e62cb9a58d368166c5c99f5dbddc6ac9c7257ad513984c733ca1f3e1718798dab066ba3965fee15429f4a4391f586d15d
+      - HASH_PASSWORD=22e9092cea7d4425fa818ffd8c7309e5d1b7df456a74221d7ff9530897ada514f53b621a182d909cb7171d420fac990ef7ac4dc3a1a58cf672e03849c61d0e73
       - JWT_SECRET=blog
       - ISSUER=rukeith
     depends_on:
       - mongo
       - redis
+    ports: 
+      - "443:443"
 
 networks:
   blog-network:
     name: blog-network
     labels:
-      - "CI-TEST=jenkins"
+      - "SERVICE=network"
       - "PROJECT=blog"
