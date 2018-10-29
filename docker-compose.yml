@@ -1,12 +1,11 @@
 version: "3.7"
-
 services:
   mongo:
     image: mongo
     container_name: blog-mongo
     labels:
-      - "PROJECT=blog"
       - "SERVICE=mongo"
+      - "PROJECT=blog"
     networks:
       - blog-network
     ports: 
@@ -16,24 +15,20 @@ services:
     image: redis
     container_name: blog-redis
     labels:
-      - "PROJECT=blog"
       - "SERVICE=redis"
+      - "PROJECT=blog"
     networks:
       - blog-network
     ports: 
       - "6379:6379"
 
   server:
-    build:
-      context: .
-      labels:
-        - "PROJECT=blog"
-        - "SERVICE=server"
+    build: .
     image: backend
     container_name: blog-server
     labels:
-      - "PROJECT=blog"
       - "SERVICE=server"
+      - "PROJECT=blog"
     networks:
       - blog-network
     environment:
@@ -57,5 +52,5 @@ networks:
   blog-network:
     name: blog-network
     labels:
-      - "PROJECT=blog"
       - "SERVICE=network"
+      - "PROJECT=blog"
