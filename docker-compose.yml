@@ -8,6 +8,8 @@ services:
       - "PROJECT=blog"
     networks:
       - blog-network
+    ports: 
+      - "27017:27017"
 
   redis:
     image: redis
@@ -17,6 +19,8 @@ services:
       - "PROJECT=blog"
     networks:
       - blog-network
+    ports: 
+      - "6379:6379"
 
   server:
     build: .
@@ -40,6 +44,8 @@ services:
     depends_on:
       - mongo
       - redis
+    ports: 
+      - "5000:5000"
 
 networks:
   blog-network:
