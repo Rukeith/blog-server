@@ -18,7 +18,7 @@
   "dependencies": {
     "cross-env": "^5.2.0",
     "crypto-js": "^3.1.9-1",
-    "dotenv": "^6.1.0",
+    "dotenv": "^6.2.0-rc1",
     "elasticsearch": "^15.2.0",
     "http-status": "^1.2.0",
     "jsonwebtoken": "^8.3.0",
@@ -38,7 +38,7 @@
     "koa-views": "^6.1.4",
     "lodash": "^4.17.11",
     "luxon": "^1.4.5",
-    "mongoose": "^5.3.8",
+    "mongoose": "^5.3.9",
     "portfinder": "^1.0.19",
     "raven": "^2.6.4",
     "redis": "^2.8.0",
