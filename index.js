@@ -206,9 +206,9 @@ if (process.env.NODE_ENV === 'production') {
     {
       allowHTTP1: true,
       key: fs.readFileSync('./ssl.key', 'utf8'),
-      cert: fs.readFileSync('./ssl.cert', 'utf8')
+      cert: fs.readFileSync('./ssl.cert', 'utf8'),
     },
-    app.callback()
+    app.callback(),
   ).listen(443);
 } else {
   portfinder.basePort = process.env.PORT ? process.env.PORT : 5000;
