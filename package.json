@@ -16,6 +16,7 @@
   "author": "Rukeith <fenglan.crazydance@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "chai": "^4.2.0",
     "cross-env": "^5.2.0",
     "crypto-js": "^3.1.9-1",
     "dotenv": "^6.2.0-rc1",
@@ -37,7 +38,8 @@
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.4",
     "lodash": "^4.17.11",
-    "luxon": "^1.7.1",
+    "luxon": "^1.8.0",
+    "mocha": "^5.2.0",
     "mongoose": "^5.3.13",
     "portfinder": "^1.0.19",
     "raven": "^2.6.4",
