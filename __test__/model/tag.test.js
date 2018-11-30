@@ -6,7 +6,7 @@ const tagModel = new TagModel();
 
 describe('[Model] tag, ', () => {
   describe('Create, ', () => {
-    afterAll(() => Tag.remove({}));
+    afterAll(() => Tag.deleteMany({}));
 
     test('Error: empty parameter', async () => {
       try {
@@ -37,7 +37,7 @@ describe('[Model] tag, ', () => {
       testObj = await tagModel.create(tagName);
     });
 
-    afterEach(() => Tag.remove({}));
+    afterEach(() => Tag.deleteMany({}));
 
     test('Error: find tag with null or undefined', async () => {
       try {

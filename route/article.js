@@ -559,7 +559,7 @@ module.exports = (api) => {
 
       if (!_.isEmpty(url)) {
         const existArticle = await articleModel.find({ url }, 'one');
-        if (existArticle.id !== articleId) {
+        if (existArticle && existArticle.id !== articleId) {
           articleErrorResponse(ctx, 1000);
           return;
         }

@@ -15,7 +15,7 @@ describe('[Route] index', () => {
     process.env.HASH_PASSWORD = CryptoJS.HmacSHA512(`${process.env.PASSWORD}${process.env.SALT}`, process.env.SALT);
   });
 
-  afterEach(() => Session.remove({}));
+  afterEach(() => Session.deleteMany({}));
 
   describe('Login', () => {
     test('Error: username is not existed', async () => {

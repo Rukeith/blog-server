@@ -17,7 +17,7 @@ describe('[Route] tag', () => {
       expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
     });
   });
-  afterEach(() => Promise.all([Tag.remove({}), Session.remove({})]));
+  afterEach(() => Promise.all([Tag.deleteMany({}), Session.deleteMany({})]));
 
   describe('Create tag', () => {
     test('Error: name is empty', async () => {
@@ -115,7 +115,7 @@ describe('[Route] tag', () => {
       TEST_TAGS.push(tag2);
     });
 
-    afterAll(() => Article.remove({}));
+    afterAll(() => Article.deleteMany({}));
 
     test('Success: query tags with invalid query parameters', async () => {
       const response = await request(app.callback())
@@ -245,7 +245,7 @@ describe('[Route] tag', () => {
       });
     });
 
-    afterAll(() => Article.remove({}));
+    afterAll(() => Article.deleteMany({}));
 
     test('Error: get single tag with deleted tag id', async () => {
       const response = await request(app.callback())
