@@ -32,6 +32,7 @@ const app = new Koa();
 const router = new Router();
 router.use((ctx, next) => {
   // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  /* istanbul ignore if */
   if (mongoose.connection.readyState !== 1 && process.env.NODE_ENV !== 'test') {
     return errorResponse(ctx, [HTTPStatus.INTERNAL_SERVER_ERROR, 'index', '', 1000]);
   }
@@ -57,8 +58,8 @@ const log = winston.createLogger({
 });
 
 /* Init rollbar */
-/* istanbul ignore if */
 let rollbar;
+/* istanbul ignore if */
 if (process.env.ROLLBAR_ACCESS_TOKEN) {
   rollbar = new Rollbar(process.env.ROLLBAR_ACCESS_TOKEN);
 }
@@ -121,6 +122,7 @@ client.on('connect', () => {
   }));
 });
 
+/* istanbul ignore next */
 client.on('error', err => log.error('Redis connecting failed !!!', err));
 
 const index = require('./route/index.js');
@@ -166,6 +168,7 @@ const pug = new Pug({
 pug.use(app);
 
 app.on('error', (err, ctx) => {
+  /* istanbul ignore if */
   if (rollbar) rollbar.log(err);
 
   try {
@@ -201,6 +204,7 @@ app.on('error', (err, ctx) => {
   }
 });
 
+/* istanbul ignore if */
 if (process.env.NODE_ENV === 'production') {
   http2.createSecureServer(
     {
