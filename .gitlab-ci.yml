@@ -15,7 +15,7 @@ lint:
   before_script:
     - yarn
   script:
-   - yarn lint
+    - yarn lint
 
 test:
   stage: test
@@ -26,7 +26,7 @@ test:
   before_script:
     - yarn
   script:
-   - yarn test
+    - yarn test
 
 staging:
   stage: deploy
