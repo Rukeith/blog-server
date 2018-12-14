@@ -48,6 +48,7 @@ production:
     - tags
   except:
     - branches
+    - schedules
   environment:
     name: production
     url: https://blog-server-prod.herokuapp.com
