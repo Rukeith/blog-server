@@ -15,7 +15,7 @@ describe('[Route] index', () => {
     process.env.HASH_PASSWORD = CryptoJS.HmacSHA512(`${process.env.PASSWORD}${process.env.SALT}`, process.env.SALT);
   });
 
-  afterEach(() => Session.remove({}));
+  afterEach(() => Session.deleteMany({}));
 
   describe('Login', () => {
     test('Error: username is not existed', async () => {
@@ -51,6 +51,8 @@ describe('[Route] index', () => {
     });
 
     test('Success: login and create session', async () => {
+      process.env.JWT_SECRET = Math.random();
+      process.env.ISSUER = process.env.USERNAME;
       const response = await request(app.callback())
         .post('/login')
         .send({
@@ -66,7 +68,7 @@ describe('[Route] index', () => {
       expect(body.data).toHaveProperty('token');
       const result = jwt.verify(body.data.token, Buffer.from(process.env.JWT_SECRET));
       expect(result).toHaveProperty('ip');
-      expect(result).toHaveProperty('iss', 'rukeith');
+      expect(result).toHaveProperty('iss', process.env.ISSUER);
     });
   });
 });

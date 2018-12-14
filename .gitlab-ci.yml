@@ -1,56 +1,58 @@
-services:
-  - mongo:latest
-  - redis:latest
-
 cache:
   paths:
   - views/
   - public/
   - node_modules/
 
-before_script:
-  - apt-get update -yq
-
 stages:
-   - lint
-   - test
-   - deploy
+  - lint
+  - test
+  - deploy
 
 lint:
-  image: node:latest
-  script:
-   - yarn
-   - yarn lint
   stage: lint
+  image: node
+  before_script:
+    - yarn
+  script:
+    - yarn lint
 
 test:
-  image: node:latest
-  script:
-   - yarn
-   - yarn test
   stage: test
+  image: node
+  services:
+    - mongo
+    - redis
+  before_script:
+    - yarn
+  script:
+    - yarn test
 
 staging:
-  image: ruby:latest
   stage: deploy
+  image: ruby
   only:
     - develop
   environment:
     name: staging
     url: https://blog-server-dev.herokuapp.com
-  script:
+  before_script:
     - gem install dpl
+  script:
     - dpl --provider=heroku --app=blog-server-dev --api-key=$HEROKU_STAGING_API_KEY --strategy=git
 
 production:
-  image: ruby:latest
   stage: deploy
+  image: ruby
   only:
     - tags
-    - master
+  except:
+    - branches
+    - schedules
   environment:
     name: production
     url: https://blog-server-prod.herokuapp.com
-  script:
+  before_script:
     - gem install dpl
+  script:
     - dpl --provider=heroku --app=blog-server-prod --api-key=$HEROKU_PRODUCTION_API_KEY --strategy=git

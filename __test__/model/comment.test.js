@@ -22,7 +22,7 @@ describe('[Model] comment', () => {
       TEST_ARTICLE = await Article.create(options);
     });
 
-    afterAll(() => Promise.all([Article.remove({}), Comment.remove({})]));
+    afterAll(() => Promise.all([Article.deleteMany({}), Comment.deleteMany({})]));
 
     test('Error: empty parameter', async () => {
       try {
@@ -74,7 +74,7 @@ describe('[Model] comment', () => {
       testObj = await commentModel.create(options.comment);
     });
 
-    afterEach(() => Promise.all([Article.remove({}), Comment.remove({})]));
+    afterEach(() => Promise.all([Article.deleteMany({}), Comment.deleteMany({})]));
 
     test('Error: find comment with null or undefined', async () => {
       try {

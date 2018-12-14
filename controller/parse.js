@@ -63,6 +63,4 @@ module.exports = {
     ctx.status = status;
     ctx.app.emit('error', new Error(message), ctx);
   },
-
-  filterNull: (options = {}) => _.pickBy(options, value => !_.isNil(value)),
 };

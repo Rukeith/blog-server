@@ -6,7 +6,7 @@ const articleModel = new ArticleModel();
 
 describe('[Model] article', () => {
   describe('Create', () => {
-    afterAll(() => Article.remove({}));
+    afterAll(() => Article.deleteMany({}));
 
     test('Error: empty parameter', async () => {
       try {
@@ -60,7 +60,7 @@ describe('[Model] article', () => {
       testObj = await articleModel.create(options);
     });
 
-    afterEach(() => Article.remove({}));
+    afterEach(() => Article.deleteMany({}));
 
     test('Error: find article with null or undefined', async () => {
       try {

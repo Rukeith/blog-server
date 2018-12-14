@@ -39,7 +39,7 @@ describe('[Route] comment', () => {
       expiredAt: DateTime.local().plus({ minutes: 5 }).toJSDate(),
     });
   });
-  afterEach(() => Promise.all([Article.remove({}), Comment.remove({})]));
+  afterEach(() => Promise.all([Article.deleteMany({}), Comment.deleteMany({})]));
 
   describe('Update comment', () => {
     test('Error: update comment with not existed id', async () => {

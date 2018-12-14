@@ -6,7 +6,7 @@ const sessionModel = new SessionModel();
 
 describe('[Model] session', () => {
   describe('Create', () => {
-    afterAll(() => Session.remove({}));
+    afterAll(() => Session.deleteMany({}));
 
     test('Error: empty parameter', async () => {
       try {
@@ -42,7 +42,7 @@ describe('[Model] session', () => {
       testObj = await sessionModel.create(options);
     });
 
-    afterEach(() => Session.remove({}));
+    afterEach(() => Session.deleteMany({}));
 
     test('Error: find session with null or undefined', async () => {
       try {

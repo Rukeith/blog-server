@@ -33,10 +33,10 @@ describe('[Route] article', () => {
     ]);
   });
 
-  afterEach(() => Promise.all([Article.remove({}), Session.remove({})]));
+  afterEach(() => Promise.all([Article.deleteMany({}), Session.deleteMany({})]));
 
   describe('Create article', () => {
-    afterEach(() => Tag.remove({}));
+    afterEach(() => Tag.deleteMany({}));
 
     test('Error: article\'s url have been used', async () => {
       const now = DateTime.local().valueOf();
@@ -666,6 +666,7 @@ describe('[Route] article', () => {
         .send({ url: articleUrl });
 
       const { body, status } = response;
+      console.log('body =', body);
       expect(status).toBe(HTTPStatus.OK);
       expect(body).toHaveProperty('status', HTTPStatus.OK);
       expect(body).toHaveProperty('message', langUS['success-articleApi-1003']);
@@ -709,7 +710,7 @@ describe('[Route] article', () => {
       });
     });
 
-    afterEach(() => Tag.remove({}));
+    afterEach(() => Tag.deleteMany({}));
 
     test('Error: update article\'s tags with unexisted id', async () => {
       const response = await request(app.callback())
