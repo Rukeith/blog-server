@@ -36,11 +36,11 @@
     "koa-router": "^8.0.0-alpha.1",
     "koa-sslify": "^2.2.0",
     "koa-static": "^5.0.0",
-    "koa-views": "^6.1.4",
+    "koa-views": "^6.1.5",
     "lodash": "^4.17.11",
     "luxon": "^1.8.2",
     "mocha": "^5.2.0",
-    "mongoose": "^5.3.16",
+    "mongoose": "^5.4.0",
     "portfinder": "^1.0.20",
     "raven": "^2.6.4",
     "redis": "^2.8.0",
@@ -53,8 +53,8 @@
     "eslint": "^5.10.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "jest": "^24.0.0-alpha.8",
-    "nodemon": "^1.18.8",
+    "jest": "^24.0.0-alpha.9",
+    "nodemon": "^1.18.9",
     "supertest": "^3.3.0"
   }
 }
