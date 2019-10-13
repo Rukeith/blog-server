@@ -18,3 +18,8 @@ patch:
         patched: '2019-07-06T07:18:47.983Z'
     - koa-pug > pug > pug-code-gen > pug-attrs > constantinople > babel-types > lodash:
         patched: '2019-07-06T07:18:47.983Z'
+  SNYK-JS-HTTPSPROXYAGENT-469131:
+    - snyk > proxy-agent > https-proxy-agent:
+        patched: '2019-10-13T06:57:46.806Z'
+    - snyk > proxy-agent > pac-proxy-agent > https-proxy-agent:
+        patched: '2019-10-13T06:57:46.806Z'
