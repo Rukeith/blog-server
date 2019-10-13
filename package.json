@@ -7,7 +7,9 @@
     "dev": "./node_modules/.bin/cross-env NODE_ENV=development nodemon index.js",
     "test": "./node_modules/.bin/cross-env NODE_ENV=test JWT_SECRET=blog jest --coverage --no-cache --forceExit --runInBand",
     "lint": "./node_modules/.bin/eslint --quiet .",
-    "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json"
+    "apidoc": "./node_modules/.bin/apidoc -i ./route -o ./public/apidoc -c ./config/apidoc.json",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "engines": {
     "node": ">=11.4.0"
@@ -45,7 +47,8 @@
     "raven": "^2.6.4",
     "redis": "^2.8.0",
     "rollbar": "^2.5.1",
-    "winston": "^3.1.0"
+    "winston": "^3.1.0",
+    "snyk": "^1.192.3"
   },
   "devDependencies": {
     "apidoc": "^0.17.7",
@@ -56,5 +59,6 @@
     "jest": "^24.0.0-alpha.8",
     "nodemon": "^1.18.8",
     "supertest": "^3.3.0"
-  }
+  },
+  "snyk": true
 }
