@@ -48,7 +48,7 @@
     "redis": "^2.8.0",
     "rollbar": "^2.5.1",
     "winston": "^3.1.0",
-    "snyk": "^1.192.3"
+    "snyk": "^1.234.2"
   },
   "devDependencies": {
     "apidoc": "^0.17.7",
