@@ -1,6 +1,14 @@
 {
   "parserOptions": {
-    "ecmaVersion": 7,
     "sourceType": "module"
-  }
+  },
+  "parser": "babel-eslint",
+  "env": {
+    "commonjs": true,
+    "es2020": true,
+    "jest": true,
+    "mongo": true,
+    "node": true
+  },
+  "extends": "airbnb-base"
 }
